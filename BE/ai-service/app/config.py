@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     RAG_RERANKER_ENABLED: bool = True
     RAG_RERANKER_MODEL: str = "AITeamVN/Vietnamese_Reranker"
     RAG_RERANKER_DEVICE: str = "auto"
+    # 0 uses half the CPU cores so the reranker does not starve Ollama.
+    RAG_RERANKER_CPU_THREADS: int = 0
     # Comma-separated tax years that have a drafting template; empty allows any year (SH-04).
     DRAFT_SUPPORTED_TAX_YEARS: str = "2026"
     CHAT_MAX_QUESTION_CHARS: int = 6000

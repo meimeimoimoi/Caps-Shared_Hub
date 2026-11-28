@@ -21,7 +21,7 @@ from app.modules.rag.generator import (
     build_citations,
     format_context_chunks,
 )
-from app.modules.rag.retriever import TemporalRetriever
+from app.modules.rag.retriever import DRAFT_RETRIEVAL_LIMIT, TemporalRetriever
 from app.modules.rag.router import ScopeRouter
 from app.schemas.answers import OUT_OF_SCOPE_ANSWER, TAX_PERIOD_CLARIFICATION_ANSWER
 from app.schemas.chat_dto import ChatQueryRequest, ChatQueryResponse
@@ -223,7 +223,7 @@ def draft_document(req: GenerateDraftRequest):
         valid_start, valid_end = _validate_draft_period(req.period_start, req.period_end)
         retrieval_query = build_draft_retrieval_query(req.snapshot_data, req.template_schema)
         retrieved = TemporalRetriever.retrieve(
-            query=retrieval_query, period_start=valid_start, period_end=valid_end
+            query=retrieval_query, period_start=valid_start, period_end=valid_end, limit=DRAFT_RETRIEVAL_LIMIT
         )
         retrieved = prioritize_draft_hits(retrieved, req.snapshot_data, req.template_schema)
         context = format_context_chunks(retrieved)

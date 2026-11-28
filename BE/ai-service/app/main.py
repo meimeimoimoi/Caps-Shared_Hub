@@ -12,7 +12,7 @@ from app.api.exception_handlers import register_exception_handlers
 from app.api.routes import router
 from app.config import settings
 from app.core.qdrant import init_qdrant, qdrant_client
-from app.modules.rag.retriever import warmup_reranker
+from app.modules.rag.retriever import reranker_status, warmup_reranker
 
 logger = logging.getLogger(__name__)
 _READYZ_CACHE_TTL_SECONDS = 15.0
@@ -161,7 +161,8 @@ def readyz():
     """Readiness probe verifying Qdrant collection and required Ollama models."""
     qdrant_status = _check_qdrant_ready()
     ollama_status = _check_ollama_ready()
-    checks = {"qdrant": qdrant_status, "ollama": ollama_status}
+    # Reported only: without the Cross-Encoder, chat still answers on the hybrid RRF ranking.
+    checks = {"qdrant": qdrant_status, "ollama": ollama_status, "reranker": reranker_status()}
 
     if qdrant_status != "ok" or ollama_status != "ok":
         return JSONResponse(

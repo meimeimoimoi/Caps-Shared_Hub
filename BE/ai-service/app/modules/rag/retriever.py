@@ -30,6 +30,10 @@ _RERANK_MIN_PROB = 0.05
 _MAX_CHUNKS_PER_DOCUMENT = 4
 _DEFAULT_LIMIT = 6
 _RERANK_SHORTLIST_SIZE = 10
+# Drafts cite more clauses than one chat answer; prod retrieved 10 before the reranker branch.
+DRAFT_RETRIEVAL_LIMIT = 10
+_MAX_SIBLING_CLAUSES = 2
+_SIBLING_SCROLL_LIMIT = 8
 _RRF_K = 60
 
 # Concept-only query for locating the active period's tax-rate article without hardcoding rates or amounts.
@@ -85,6 +89,14 @@ _RERANKER_MAX_LENGTH = 384
 _RERANKER_BATCH_SIZE = 4
 
 
+def _reranker_cpu_threads() -> int:
+    """Threads for CPU inference: configured, or half the cores so Ollama keeps the rest."""
+    configured = settings.RAG_RERANKER_CPU_THREADS
+    if configured > 0:
+        return configured
+    return max(2, (os.cpu_count() or 4) // 2)
+
+
 def _resolve_reranker_device(torch_mod) -> str:
     configured = (settings.RAG_RERANKER_DEVICE or "auto").strip().lower()
     if configured and configured != "auto":
@@ -100,6 +112,16 @@ class _CrossEncoderReranker:
         self._tokenizer = None
         self._model = None
         self._device: str = "cpu"
+        # Set after a failed load so every later request skips the download until the service restarts.
+        self._load_failed = False
+
+    def status(self) -> str:
+        """Readiness of the Cross-Encoder: disabled, not_loaded, ok, or failed (chat then uses hybrid RRF)."""
+        if not settings.RAG_RERANKER_ENABLED:
+            return "disabled"
+        if self._load_failed:
+            return "failed"
+        return "ok" if self._model is not None else "not_loaded"
 
     def _ensure_loaded(self) -> None:
         if self._model is not None:
@@ -107,30 +129,36 @@ class _CrossEncoderReranker:
         with self._lock:
             if self._model is not None:
                 return
-            import torch
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+            try:
+                self._load()
+            except Exception:
+                self._load_failed = True
+                raise
 
-            self._device = _resolve_reranker_device(torch)
-            if self._device == "cpu":
-                cpu_threads = max(2, os.cpu_count() or 4)
-                torch.set_num_threads(cpu_threads)
+    def _load(self) -> None:
+        import torch
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-            model_name = settings.RAG_RERANKER_MODEL
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            model_kwargs = {"torch_dtype": torch.float16} if self._device.startswith("cuda") else {}
-            model = AutoModelForSequenceClassification.from_pretrained(
-                model_name, **model_kwargs
-            ).to(self._device)
-            model.eval()
+        self._device = _resolve_reranker_device(torch)
+        if self._device == "cpu":
+            torch.set_num_threads(_reranker_cpu_threads())
 
-            if self._device == "cpu" and isinstance(model, torch.nn.Module):
-                model = torch.ao.quantization.quantize_dynamic(
-                    model, {torch.nn.Linear}, dtype=torch.qint8
-                )
+        model_name = settings.RAG_RERANKER_MODEL
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model_kwargs = {"torch_dtype": torch.float16} if self._device.startswith("cuda") else {}
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_name, **model_kwargs
+        ).to(self._device)
+        model.eval()
 
-            self._tokenizer = tokenizer
-            self._model = model
-            logger.info("Loaded Cross-Encoder reranker '%s' on %s", model_name, self._device)
+        if self._device == "cpu" and isinstance(model, torch.nn.Module):
+            model = torch.ao.quantization.quantize_dynamic(
+                model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+
+        self._tokenizer = tokenizer
+        self._model = model
+        logger.info("Loaded Cross-Encoder reranker '%s' on %s", model_name, self._device)
 
     def warmup(self) -> None:
         if not settings.RAG_RERANKER_ENABLED:
@@ -138,7 +166,7 @@ class _CrossEncoderReranker:
         self.score("thuế thu nhập doanh nghiệp", ["Quy định về thuế thu nhập doanh nghiệp."])
 
     def score(self, query: str, passages: list[str]) -> list[float] | None:
-        if not passages or not settings.RAG_RERANKER_ENABLED:
+        if not passages or not settings.RAG_RERANKER_ENABLED or self._load_failed:
             return None
         try:
             import torch
@@ -174,6 +202,11 @@ class _CrossEncoderReranker:
 
 
 _reranker = _CrossEncoderReranker()
+
+
+def reranker_status() -> str:
+    """Cross-Encoder state for /readyz; "failed" means chat runs on the hybrid RRF fallback."""
+    return _reranker.status()
 
 
 def warmup_reranker() -> None:
@@ -516,32 +549,44 @@ def _fetch_missing_article_siblings(hits: list, period_start: str, period_end: s
         return []
 
     base_filter = _build_temporal_filter(period_start, period_end)
-    sibling_filter = Filter(
-        must=[
-            *(base_filter.must or []),
-            FieldCondition(key="document_number", match=MatchValue(value=anchor_doc)),
-            FieldCondition(key="article", match=MatchValue(value=anchor_article)),
-            Filter(
-                should=[
-                    FieldCondition(key="clause", match=MatchValue(value=cl))
-                    for cl in target_clauses[:3]
-                ]
-            ),
-        ]
-    )
-    try:
-        points, _ = qdrant_client.scroll(
-            collection_name=settings.QDRANT_COLLECTION,
-            scroll_filter=sibling_filter,
-            limit=2,
-            with_payload=True,
-            with_vectors=False,
+    seen_ids = {getattr(h, "id", None) for h in hits if getattr(h, "id", None) is not None}
+    siblings: list = []
+    for clause_label in target_clauses[:_MAX_SIBLING_CLAUSES]:
+        sibling_filter = Filter(
+            must=[
+                *(base_filter.must or []),
+                FieldCondition(key="document_number", match=MatchValue(value=anchor_doc)),
+                FieldCondition(key="article", match=MatchValue(value=anchor_article)),
+                FieldCondition(key="clause", match=MatchValue(value=clause_label)),
+            ]
         )
-        seen_ids = {getattr(h, "id", None) for h in hits if getattr(h, "id", None) is not None}
-        return [pt for pt in (points or []) if getattr(pt, "id", None) not in seen_ids]
-    except Exception:
-        logger.debug("Sibling clause lookup skipped", exc_info=True)
-        return []
+        try:
+            points, _ = qdrant_client.scroll(
+                collection_name=settings.QDRANT_COLLECTION,
+                scroll_filter=sibling_filter,
+                limit=_SIBLING_SCROLL_LIMIT,
+                with_payload=True,
+                with_vectors=False,
+            )
+        except Exception:
+            logger.debug("Sibling clause lookup skipped for %s", clause_label, exc_info=True)
+            continue
+        candidates = [
+            pt
+            for pt in (points or [])
+            if getattr(pt, "id", None) not in seen_ids
+            and str((getattr(pt, "payload", None) or {}).get("clause") or "").strip() == clause_label
+        ]
+        if not candidates:
+            continue
+        # The clause's opening chunk (no point label) carries its general rule; otherwise take the first point.
+        pick = next(
+            (pt for pt in candidates if not str((getattr(pt, "payload", None) or {}).get("point") or "").strip()),
+            candidates[0],
+        )
+        siblings.append(pick)
+        seen_ids.add(getattr(pick, "id", None))
+    return siblings
 
 
 class TemporalRetriever:

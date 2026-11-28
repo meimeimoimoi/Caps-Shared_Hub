@@ -67,7 +67,7 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
             resp = self.client.get("/readyz")
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"status": "ready", "checks": {"qdrant": "ok", "ollama": "ok"}})
+        self.assertEqual(resp.json(), {"status": "ready", "checks": {"qdrant": "ok", "ollama": "ok", "reranker": "disabled"}})
         mock_probe.assert_called_once()
 
     def test_readyz_returns_503_when_ollama_runner_hangs_even_if_tags_ok(self):
@@ -109,7 +109,7 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 503)
         self.assertEqual(
             resp.json(),
-            {"status": "unavailable", "checks": {"qdrant": "collection_missing", "ollama": "model_missing"}},
+            {"status": "unavailable", "checks": {"qdrant": "collection_missing", "ollama": "model_missing", "reranker": "disabled"}},
         )
 
     def test_internal_key_protection_when_configured(self):
