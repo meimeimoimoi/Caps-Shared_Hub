@@ -85,6 +85,20 @@ class FalsePremiseTests(unittest.TestCase):
         self.assertIsNotNone(note)
         self.assertIn("30/4", note)
 
+    def test_premise_restated_without_a_verdict_is_flagged(self):
+        # Store118 run: KK-10 answered just "30/4/2027" and TS-09 just restated the 17% bracket.
+        kk10 = "Hạn nộp hồ sơ quyết toán thuế TNDN năm 2026 là ngày 30/4/2027 đúng không?"
+        self.assertIn("30/4", affirms_unsupported_premise(kk10, "30/4/2027 [1]", [_hit(DEADLINE)]))
+        ts09 = "Doanh nghiệp doanh thu 40 tỷ được áp dụng thuế suất 17% trong 10 năm đúng không?"
+        note = affirms_unsupported_premise(
+            ts09, "Doanh nghiệp có tổng doanh thu năm từ trên 03 tỷ đồng đến không quá 50 tỷ đồng được áp dụng thuế suất 17%.", [_hit(RATES)]
+        )
+        self.assertIn("10 năm", note)
+
+    def test_bare_no_counts_as_a_denial(self):
+        question = "Hạn nộp hồ sơ quyết toán thuế TNDN năm 2026 là ngày 30/4/2027 đúng không?"
+        self.assertIsNone(affirms_unsupported_premise(question, "Không, hạn là ngày cuối cùng của tháng thứ 3 [1].", [_hit(DEADLINE)]))
+
     def test_supported_premise_can_be_confirmed(self):
         question = "Lỗ được chuyển liên tục không quá 5 năm đúng không?"
         self.assertIsNone(affirms_unsupported_premise(question, "Đúng, tối đa 05 năm [1].", [_hit(LOSS)]))

@@ -124,8 +124,9 @@ _REVENUE_LABEL = r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?"
 # "Thuế suất phổ thông" asks for the general rate, not an SME bracket (TS-01).
 _GENERAL_RATE_MARKERS = ("phổ thông", "thuế suất chung", "thông thường", "thuế suất cơ bản")
 _YES_NO_QUESTION_RE = re.compile(r"\b(?:đúng\s+không|có\s+đúng|phải\s+không|đúng\s+hay\s+sai)\b", re.IGNORECASE)
-_AFFIRMS_RE = re.compile(r"^\W*(?:đúng|chính\s+xác|phải)\b", re.IGNORECASE)
 _DENIES_PREMISE_RE = re.compile(r"^\W*(?:sai|không\s+(?:đúng|phải|chính\s+xác)|chưa\s+(?:đúng|chính\s+xác))\b", re.IGNORECASE)
+# A bare "Không, …" also answers "… đúng không?" with no.
+_DENIES_YES_NO_RE = re.compile(r"^\W*(?:sai|không|chưa\s+(?:đúng|chính\s+xác))\b", re.IGNORECASE)
 # "trong 10 năm", "05 năm"; a period year such as "năm 2026" puts the number after the word.
 _DURATION_RE = re.compile(r"\b(\d{1,3})\s+năm\b", re.IGNORECASE)
 _SLASH_DATE_RE = re.compile(r"(?<![\d/])(\d{1,2})/(\d{1,2})(?:/\d{4})?(?![\d/])")
@@ -138,12 +139,14 @@ def _dates(text: str) -> set[tuple[int, int]]:
 
 
 def affirms_unsupported_premise(question: str, conclusion: str, used_chunks: list) -> str | None:
-    """Return a retry note when a yes/no question is answered "Đúng" though a duration or date in it is not in the cited law.
+    """Return a retry note when a yes/no question is not denied though a duration or date in it is not in the cited law.
 
-    TS-09 "17% trong 10 năm đúng không?" and KK-10 "hạn nộp là ngày 30/4/2027 đúng không?" were both answered "Đúng".
+    TS-09 "17% trong 10 năm đúng không?" and KK-10 "hạn nộp là ngày 30/4/2027 đúng không?" were answered "Đúng",
+    and on the 118-document store with no verdict at all ("30/4/2027"; "… áp dụng thuế suất 17%."), which still
+    leaves the wrong premise standing.
     """
     body = CITATION_MARKER_RE.sub(" ", conclusion or "")
-    if not _YES_NO_QUESTION_RE.search(question or "") or not _AFFIRMS_RE.search(body):
+    if not _YES_NO_QUESTION_RE.search(question or "") or _DENIES_YES_NO_RE.search(body):
         return None
     law_text = _chunks_text(used_chunks)
     q_low = (question or "").lower()
@@ -156,7 +159,7 @@ def affirms_unsupported_premise(question: str, conclusion: str, used_chunks: lis
     details = ", ".join(missing)
     # The model repeated "Đúng" after a softer note (TS-09, KK-10 in the 28/11 log), so spell out the opening.
     return (
-        f"Kết luận trước trả lời 'Đúng' nhưng đoạn căn cứ không có chi tiết: {details}. "
+        f"Kết luận trước không bác bỏ chi tiết mà đoạn căn cứ không có: {details}. "
         "Kết luận mới BẮT BUỘC mở đầu bằng chữ 'Sai' (hoặc 'Sai một phần' nếu phần còn lại của câu hỏi đúng), "
         "TUYỆT ĐỐI KHÔNG mở đầu bằng 'Đúng'. Sau đó viết: "
         f"\"đoạn căn cứ không quy định {details}\" và nêu quy định đúng theo đoạn căn cứ, kèm số thứ tự căn cứ."
