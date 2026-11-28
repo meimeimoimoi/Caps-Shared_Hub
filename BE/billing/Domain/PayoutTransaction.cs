@@ -14,6 +14,9 @@ public sealed class PayoutTransaction
 
     public string PayoutType { get; private set; } = default!;
     public Guid RecipientUserId { get; private set; }
+
+    /// <summary>The expert's contact email from the review case, for notices; null when unknown.</summary>
+    public string? RecipientEmail { get; private set; }
     public long Amount { get; private set; }
     public Guid? BankAccountId { get; private set; }
     public BankAccount? BankAccount { get; }
@@ -77,6 +80,7 @@ public sealed class PayoutTransaction
     public static PayoutTransaction ToExpert(
         Settlement settlement,
         Guid expertUserId,
+        string? recipientEmail,
         BankAccount? account,
         DateTimeOffset now
     )
@@ -87,6 +91,7 @@ public sealed class PayoutTransaction
             Settlement = settlement,
             PayoutType = Domain.PayoutType.ExpertPayout,
             RecipientUserId = expertUserId,
+            RecipientEmail = recipientEmail,
             Amount = settlement.ExpertPayoutAmount,
             CreatedAt = now,
             UpdatedAt = now,

@@ -489,6 +489,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("provider_ref");
 
+                    b.Property<string>("RecipientEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("recipient_email");
+
                     b.Property<Guid>("RecipientUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("recipient_user_id");
@@ -590,6 +594,40 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("settlement", "billing");
+                });
+
+            modelBuilder.Entity("Caps.Billing.Infrastructure.Messaging.NotificationOutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("message_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt", "CreatedAt")
+                        .HasDatabaseName("ix_notification_outbox_pending");
+
+                    b.ToTable("notification_outbox", "billing");
                 });
 
             modelBuilder.Entity("Caps.Billing.Domain.CreditLedger", b =>

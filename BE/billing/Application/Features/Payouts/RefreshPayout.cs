@@ -1,4 +1,5 @@
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Application.Common;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
@@ -18,7 +19,8 @@ public sealed class RefreshPayoutHandler(
     IPayoutGateway gateway,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
-    WorkCalendar calendar
+    WorkCalendar calendar,
+    IBillingNotificationOutbox outbox
 ) : ICommandHandler<RefreshPayoutCommand, PayoutResponse>
 {
     /// <summary>
@@ -44,6 +46,9 @@ public sealed class RefreshPayoutHandler(
             payout.Apply(report.ProviderRef, report.Status, report.Error, now);
         else if (payout.ProviderRef == null && now - payout.UpdatedAt >= NotReceivedAfter)
             payout.Fail("NOT_RECEIVED", now);
+        // It was PROCESSING above: tell the expert only once PayOS settled it
+        if (payout.Status != PayoutStatus.Processing)
+            PayoutNotices.Enqueue(outbox, payout, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return PayoutResponse.From(payout, calendar);

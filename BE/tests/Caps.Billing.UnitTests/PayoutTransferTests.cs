@@ -206,6 +206,7 @@ public sealed class PayoutTransferTests
             Settlement.ForRelease(escrow, 10, at),
             Expert,
             null,
+            null,
             at
         );
         var calendar = new WorkCalendar(["09-02"]);
@@ -217,6 +218,36 @@ public sealed class PayoutTransferTests
         Assert.Equal(
             DateTimeOffset.Parse(due, CultureInfo.InvariantCulture),
             payout.DueAt(calendar)
+        );
+    }
+
+    // The expert hears of a payout once per change that matters: paid, failed, or a new account needed
+    [Fact]
+    public async Task The_expert_is_told_once_per_outcome()
+    {
+        var store = new Store(Account(isDefault: true));
+        store.Gateway.Next = new(new("po_1", PayoutStatus.Processing, null), null);
+        await store.Transfer();
+        store.Gateway.Found = new("po_1", PayoutStatus.Processing, null);
+        await store.Refresh();
+        store.Gateway.Found = new("po_1", PayoutStatus.Succeeded, null);
+        await store.Refresh();
+        await store.Refresh();
+
+        var paid = Assert.Single(store.Outbox.Sent);
+        Assert.Equal(
+            ("SUCCEEDED", store.Payout.Id, 450_000L),
+            (paid.Change, paid.PayoutId, paid.Amount)
+        );
+
+        var failing = new Store(Account(isDefault: true));
+        failing.Gateway.Next = new(null, "Sai số tài khoản");
+        for (var i = 0; i < PayoutTransaction.MaxAttempts; i++)
+            await failing.Transfer();
+
+        Assert.Equal(
+            ["FAILED", "FAILED", "FAILED", "ACCOUNT_NEEDED"],
+            failing.Outbox.Sent.Select(x => x.Change)
         );
     }
 
@@ -333,6 +364,7 @@ public sealed class PayoutTransferTests
             Payout = PayoutTransaction.ToExpert(
                 settlement,
                 Expert,
+                null,
                 snapshot,
                 Now.AddDays(-PayoutTransaction.HoldDays)
             );
@@ -346,6 +378,7 @@ public sealed class PayoutTransferTests
         public PayoutTransaction Payout { get; }
         public Gateway Gateway { get; } = new();
         public Clock Clock { get; } = new();
+        public FakeNotificationOutbox Outbox { get; } = new();
         public string? StatusAtSubmit { get; private set; }
         public int CommitsAtSubmit { get; private set; }
 
@@ -357,7 +390,8 @@ public sealed class PayoutTransferTests
                 Gateway,
                 this,
                 Clock,
-                WorkCalendar.WeekendsOnly
+                WorkCalendar.WeekendsOnly,
+                Outbox
             ).HandleAsync(new(Payout.Id, Staff), default);
 
         public Task<PayoutResponse> Refresh() =>
@@ -366,7 +400,8 @@ public sealed class PayoutTransferTests
                 Gateway,
                 this,
                 Clock,
-                WorkCalendar.WeekendsOnly
+                WorkCalendar.WeekendsOnly,
+                Outbox
             ).HandleAsync(new(Payout.Id), default);
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
@@ -380,6 +415,9 @@ public sealed class PayoutTransferTests
             string sortBy = "createdAt",
             bool descending = true
         ) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
+            throw new NotSupportedException();
 
         public Task<int> CountAsync(string? status, CancellationToken ct) =>
             throw new NotSupportedException();

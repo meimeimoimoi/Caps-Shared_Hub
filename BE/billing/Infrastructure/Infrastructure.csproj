@@ -11,6 +11,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
+    <ProjectReference Include="..\..\common\messaging\Messaging.csproj" />
   </ItemGroup>
 
 </Project>

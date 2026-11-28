@@ -51,7 +51,13 @@ public sealed class ReleaseEscrowHandler(
         {
             var accounts = await bankAccounts.ListAsync(command.ExpertUserId, ct);
             var account = accounts.FirstOrDefault(x => x.IsDefault);
-            payout = PayoutTransaction.ToExpert(settlement, command.ExpertUserId, account, now);
+            payout = PayoutTransaction.ToExpert(
+                settlement,
+                command.ExpertUserId,
+                null,
+                account,
+                now
+            );
             settlement.PayoutTransactions.Add(payout);
         }
         settlements.Add(settlement);

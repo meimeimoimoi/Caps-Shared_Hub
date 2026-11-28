@@ -1,4 +1,5 @@
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Application.Common;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
@@ -22,7 +23,8 @@ public sealed class TransferPayoutHandler(
     IPayoutGateway gateway,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
-    WorkCalendar calendar
+    WorkCalendar calendar,
+    IBillingNotificationOutbox outbox
 ) : ICommandHandler<TransferPayoutCommand, PayoutResponse>
 {
     /// <summary>Shown on the expert's bank statement; plain ASCII, as banks may drop diacritics.</summary>
@@ -82,6 +84,7 @@ public sealed class TransferPayoutHandler(
             payout.Apply(report.ProviderRef, report.Status, report.Error, after);
         else
             payout.Fail(submission.Refusal ?? "REFUSED", after);
+        PayoutNotices.Enqueue(outbox, payout, after);
         await unitOfWork.SaveChangesAsync(ct);
         return PayoutResponse.From(payout, calendar);
     }

@@ -1,4 +1,5 @@
 using Caps.Billing.Domain;
+using Caps.Billing.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Billing.Infrastructure.Persistence;
@@ -15,6 +16,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<PayoutTransaction> PayoutTransactions => Set<PayoutTransaction>();
     public DbSet<Dispute> Disputes => Set<Dispute>();
+    public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -200,6 +202,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.PayoutType).HasColumnName("payout_type").IsRequired();
             e.HasIndex(x => new { x.SettlementId, x.PayoutType }).IsUnique();
             e.Property(x => x.RecipientUserId).HasColumnName("recipient_user_id");
+            e.Property(x => x.RecipientEmail).HasColumnName("recipient_email");
             e.HasIndex(x => x.RecipientUserId);
             e.Property(x => x.Amount).HasColumnName("amount");
             e.Property(x => x.BankAccountId).HasColumnName("bank_account_id");
@@ -246,6 +249,24 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .WithOne()
                 .HasForeignKey(x => x.PayoutId)
                 .HasConstraintName("fk_payout_status_history_payout");
+        });
+
+        // NotificationOutbox: payout notices waiting to be published to RabbitMQ
+        modelBuilder.Entity<NotificationOutboxEntry>(e =>
+        {
+            e.ToTable("notification_outbox");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.MessageType)
+                .HasColumnName("message_type")
+                .HasMaxLength(128)
+                .IsRequired();
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.Property(x => x.SentAt).HasColumnName("sent_at");
+            // The publisher scans unsent rows in creation order
+            e.HasIndex(x => new { x.SentAt, x.CreatedAt })
+                .HasDatabaseName("ix_notification_outbox_pending");
         });
 
         // PayoutStatusHistory: append-only audit of every payout status change

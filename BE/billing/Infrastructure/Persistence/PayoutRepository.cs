@@ -39,6 +39,12 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
             )
             .SingleOrDefaultAsync(ct);
 
+    public async Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
+        await db
+            .PayoutTransactions.AsNoTracking()
+            .Where(x => x.Status == PayoutStatus.Pending || x.Status == PayoutStatus.Failed)
+            .ToListAsync(ct);
+
     private IQueryable<PayoutTransaction> Filter(string? status) =>
         status == null
             ? db.PayoutTransactions.AsNoTracking()
