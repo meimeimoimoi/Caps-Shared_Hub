@@ -36,6 +36,7 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
             .ThenBy(x => x.Id)
             .Include(x => x.History)
             .Include(x => x.BankAccount)
+            .Include(x => x.Settlement)
             .Skip(skip)
             .Take(take)
             .ToListAsync(ct);
