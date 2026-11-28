@@ -31,6 +31,27 @@ export interface Payout {
   providerRef: string | null
   createdAt: string
   completedAt: string | null
+  /** Settlement + 7 calendar days: it cannot be sent earlier */
+  transferableFrom: string
+  /** Staff must send it by then: 2 working days after the hold */
+  dueAt: string
+  /** 1 working day before dueAt, when staff are reminded */
+  remindAt: string
+  /** Every allowed attempt failed; only another verified account of the expert is tried */
+  attemptsExhausted: boolean
+  /** Status changes, oldest first; never edited */
+  history: PayoutHistoryEntry[]
+}
+
+/** One payout status change; actorUserId is null when the system or PayOS made it */
+export interface PayoutHistoryEntry {
+  status: PayoutStatus
+  attemptNo: number
+  accountLast4: string | null
+  actorUserId: string | null
+  /** PayOS payout id, or the failure reason */
+  note: string | null
+  at: string
 }
 
 export interface PayoutPage {
@@ -40,7 +61,7 @@ export interface PayoutPage {
   total: number
 }
 
-/** Newest first; status null lists every status */
+/** Newest first; payouts still to send come oldest first, so the most overdue lead */
 export async function getPayouts(
   status: string | null,
   page: number,
@@ -50,7 +71,12 @@ export async function getPayouts(
   if (isExpertDemo)
     return { items: [], page, pageSize: PAYOUT_PAGE_SIZE, total: 0 }
   const res = await api.get<Envelope<PayoutPage>>(BASE, {
-    params: { status: status ?? undefined, page, pageSize: PAYOUT_PAGE_SIZE },
+    params: {
+      status: status ?? undefined,
+      page,
+      pageSize: PAYOUT_PAGE_SIZE,
+      sortDescending: status !== 'PENDING' && status !== 'FAILED',
+    },
     signal,
   })
   return res.data
@@ -61,6 +87,8 @@ type PayoutErrorKey =
   | 'payouts.errors.noAccount'
   | 'payouts.errors.notVerified'
   | 'payouts.errors.notFound'
+  | 'payouts.errors.onHold'
+  | 'payouts.errors.attemptsExhausted'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
 
@@ -70,6 +98,8 @@ const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_NO_BANK_ACCOUNT: 'payouts.errors.noAccount',
   PAYOUT_ACCOUNT_NOT_VERIFIED: 'payouts.errors.notVerified',
   PAYOUT_NOT_FOUND: 'payouts.errors.notFound',
+  PAYOUT_ON_HOLD: 'payouts.errors.onHold',
+  PAYOUT_ATTEMPTS_EXHAUSTED: 'payouts.errors.attemptsExhausted',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',
 }

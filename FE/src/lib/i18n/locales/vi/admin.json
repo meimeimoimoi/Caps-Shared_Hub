@@ -1721,6 +1721,20 @@
     "transfer": "Chuyển khoản",
     "retry": "Chuyển lại",
     "refresh": "Kiểm tra kết quả",
+    "heldUntil": "Chuyển được từ {{date}}",
+    "stage": {
+      "overdue": "Quá hạn chót {{date}}",
+      "dueSoon": "Sắp đến hạn chót {{date}}",
+      "ready": "Sẵn sàng chuyển, hạn chót {{date}}",
+      "holding": "Đang giữ 7 ngày, hạn chót {{date}}"
+    },
+    "history": {
+      "title": "Lịch sử ({{count}})",
+      "attempt": "lần {{n}}",
+      "by": "người thực hiện {{id}}",
+      "system": "hệ thống hoặc PayOS"
+    },
+    "attemptsExhausted": "Đã chuyển lỗi {{count}} lần. Cần chuyên gia thêm tài khoản khác và được xác minh trước khi chuyển lại.",
     "confirm": "Xác nhận chuyển {{amount}}",
     "cancel": "Hủy",
     "result": {
@@ -1733,6 +1747,8 @@
       "notTransferable": "Lệnh chi đang được chuyển hoặc đã chuyển xong.",
       "noAccount": "Chuyên gia chưa có tài khoản ngân hàng để nhận tiền.",
       "notFound": "Không tìm thấy lệnh chi.",
+      "onHold": "Lệnh chi còn trong thời gian giữ 7 ngày sau quyết toán, chưa được chuyển.",
+      "attemptsExhausted": "Lệnh chi đã hết lượt chuyển lại. Cần chuyên gia thêm tài khoản khác và được xác minh.",
       "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
       "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau.",
       "notVerified": "Tài khoản nhận tiền của chuyên gia chưa được xác minh. Duyệt tài khoản ở mục Xác minh tài khoản nhận tiền trước."

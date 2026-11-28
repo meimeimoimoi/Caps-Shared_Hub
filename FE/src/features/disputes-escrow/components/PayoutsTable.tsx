@@ -37,6 +37,22 @@ const TONES = {
   FAILED: 'danger',
 } as const
 
+// Where an unsent payout stands against its hold and deadline (advisor 2026-11-28)
+type Stage = 'overdue' | 'dueSoon' | 'ready' | 'holding'
+const STAGE_TONES = {
+  overdue: 'text-danger font-semibold',
+  dueSoon: 'text-warning font-semibold',
+  ready: 'text-fg',
+  holding: 'text-fg-muted',
+} as const
+const stageOf = (p: Payout, now: number): Stage | null => {
+  if (p.status !== 'PENDING' && p.status !== 'FAILED') return null
+  if (now > new Date(p.dueAt).getTime()) return 'overdue'
+  if (now > new Date(p.remindAt).getTime()) return 'dueSoon'
+  if (now >= new Date(p.transferableFrom).getTime()) return 'ready'
+  return 'holding'
+}
+
 /* Transfers owed to experts after an escrow is released; staff send them through PayOS payouts */
 export function PayoutsTable() {
   const { t } = useTranslation(['admin', 'common'])
@@ -46,11 +62,24 @@ export function PayoutsTable() {
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [toast, setToast] = useState<ToastContent | null>(null)
+  // Read once per mount: a hold ending while the page is open shows after a refresh
+  const [now] = useState(Date.now)
   const clearToast = useCallback(() => setToast(null), [])
   const statusLabel = (s: string) =>
     STATUSES.includes(s as PayoutStatus)
       ? t(`payouts.status.${s as PayoutStatus}`)
       : s
+
+  const stageLine = (p: Payout) => {
+    const stage = stageOf(p, now)
+    return (
+      stage && (
+        <p className={`mt-1 ${STAGE_TONES[stage]}`}>
+          {t(`payouts.stage.${stage}`, { date: formatDateTime(p.dueAt) })}
+        </p>
+      )
+    )
+  }
 
   const run = (p: Payout, call: (id: string) => Promise<Payout>) => {
     setConfirmId(null)
@@ -83,6 +112,13 @@ export function PayoutsTable() {
         </Button>
       )
     if (p.status !== 'PENDING' && p.status !== 'FAILED') return null
+    // Held for 7 days after settlement; the server refuses earlier transfers too
+    if (new Date(p.transferableFrom).getTime() > now)
+      return (
+        <span className="text-fg-muted text-sm">
+          {t('payouts.heldUntil', { date: formatDateTime(p.transferableFrom) })}
+        </span>
+      )
     if (confirmId === p.id)
       return (
         <div className="flex flex-wrap justify-end gap-2">
@@ -170,6 +206,7 @@ export function PayoutsTable() {
                       tone: TONES[p.status] ?? 'neutral',
                     }}
                   />
+                  {stageLine(p)}
                   {p.completedAt && (
                     <p className="num text-fg-muted mt-1">
                       {formatDateTime(p.completedAt)}
@@ -177,6 +214,37 @@ export function PayoutsTable() {
                   )}
                   {p.lastError && (
                     <p className="text-danger mt-1">{p.lastError}</p>
+                  )}
+                  {p.history.length > 0 && (
+                    <details className="mt-2">
+                      <summary className="text-fg-muted cursor-pointer">
+                        {t('payouts.history.title', { count: p.history.length })}
+                      </summary>
+                      <ol className="text-fg-muted mt-1 space-y-1">
+                        {p.history.map((h, i) => (
+                          <li key={i}>
+                            <span className="num">{formatDateTime(h.at)}</span>
+                            {' · '}
+                            {statusLabel(h.status)}
+                            {h.attemptNo > 0 &&
+                              ` · ${t('payouts.history.attempt', { n: h.attemptNo })}`}
+                            {h.accountLast4 && (
+                              <span className="num"> · •••• {h.accountLast4}</span>
+                            )}
+                            {' · '}
+                            {h.actorUserId
+                              ? t('payouts.history.by', { id: h.actorUserId })
+                              : t('payouts.history.system')}
+                            {h.note && <span className="break-all"> · {h.note}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  )}
+                  {p.attemptsExhausted && (
+                    <p className="text-danger mt-1 font-semibold">
+                      {t('payouts.attemptsExhausted', { count: p.attemptCount })}
+                    </p>
                   )}
                 </td>
                 <td className="text-right">{actions(p)}</td>

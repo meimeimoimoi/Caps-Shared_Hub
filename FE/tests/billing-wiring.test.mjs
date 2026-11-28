@@ -133,8 +133,8 @@ test('payouts send the status filter only when one is chosen', async () => {
   await getPayouts(null, 1)
   await getPayouts('PENDING', 2)
   assert.deepEqual(params, [
-    { status: undefined, page: 1, pageSize: 20 },
-    { status: 'PENDING', page: 2, pageSize: 20 },
+    { status: undefined, page: 1, pageSize: 20, sortDescending: true },
+    { status: 'PENDING', page: 2, pageSize: 20, sortDescending: false },
   ])
 })
 
