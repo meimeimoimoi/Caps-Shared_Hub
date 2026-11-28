@@ -5,6 +5,7 @@ namespace Caps.Expert.Application.DTOs.Responses;
 /// <param name="ExpertUserId">The expert's account id, as other services (billing) know the expert.</param>
 /// <param name="Fee">Null while the expert has not priced the service.</param>
 /// <param name="CompetencyReviewer">Email of the Gate 2 reviewer when known, otherwise their user id.</param>
+/// <param name="ViolationPoints">Points not excused in the last 90 days (6 hides, 9 suspends).</param>
 public sealed record ManagedExpertResponse(
     string Id,
     string ApplicationId,
@@ -24,7 +25,9 @@ public sealed record ManagedExpertResponse(
     int ActiveCases,
     DateTimeOffset? ApprovedAt,
     string? CompetencyReviewer,
-    ManagedExpertEventResponse[] History
+    ManagedExpertEventResponse[] History,
+    string? AccountStatus,
+    int ViolationPoints
 );
 
 /// <summary>A status change, newest first; Actor is the actor's email when known, otherwise their user id.</summary>

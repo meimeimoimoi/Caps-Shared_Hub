@@ -1,6 +1,7 @@
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Experts;
@@ -12,7 +13,9 @@ public sealed record ListManagedExpertsQuery;
 public sealed class ListManagedExpertsHandler(
     IManagedExpertReader reader,
     IServiceCatalogRepository catalog,
-    IKnownReviewerRepository reviewers
+    IKnownReviewerRepository reviewers,
+    IExpertViolations violations,
+    TimeProvider clock
 ) : IQueryHandler<ListManagedExpertsQuery, IReadOnlyList<ManagedExpertResponse>>
 {
     /// <summary>Actor value for changes made by the system itself (e.g. automatic registration).</summary>
@@ -37,6 +40,12 @@ public sealed class ListManagedExpertsHandler(
             return [];
 
         var services = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code, x => x.Name);
+        // Same window as the marketplace: points not excused in the last 90 days
+        var points = await violations.PointsAsync(
+            rows.Select(r => r.ExpertProfileId).ToHashSet(),
+            clock.GetUtcNow().AddDays(-ViolationRules.WindowDays),
+            ct
+        );
         var people = rows.SelectMany(r => r.Events.Select(e => e.ActorUserId))
             .Concat(rows.Select(r => r.CompetencyReviewerUserId).OfType<Guid>())
             .ToHashSet();
@@ -78,7 +87,9 @@ public sealed class ListManagedExpertsHandler(
                         e.Note,
                         e.At
                     ))
-                    .ToArray()
+                    .ToArray(),
+                r.AccountStatus,
+                points.GetValueOrDefault(r.ExpertProfileId)
             ))
             .ToArray();
     }
