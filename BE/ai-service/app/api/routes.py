@@ -178,7 +178,7 @@ def chat_query(req: ChatQueryRequest):
             raise TimeoutError("Chat request deadline exceeded after scope routing.")
 
         p_start, p_end = analysis.period_start.isoformat(), analysis.period_end.isoformat()
-        retrieved = TemporalRetriever.retrieve(req.question, p_start, p_end)
+        retrieved = TemporalRetriever.retrieve_for_chat(req.question, p_start, p_end)
         if time.monotonic() >= deadline:
             raise TimeoutError("Chat request deadline exceeded after retrieval.")
 

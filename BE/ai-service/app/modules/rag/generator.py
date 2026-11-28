@@ -13,6 +13,8 @@ from app.modules.rag.cit_calculator import (
 from app.modules.rag.guardrails import (
     CITATION_MARKER_RE,
     allowed_document_numbers_from_chunks,
+    backfill_sources_for_figures,
+    citation_indexes,
     drops_critical_condition,
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
@@ -167,10 +169,13 @@ def _parse_model_answer(raw_content: str) -> _ModelAnswer | None:
 
 
 def _renumber_markers(text: str, mapping: dict[int, int]) -> str:
-    return CITATION_MARKER_RE.sub(
-        lambda m: f"[{mapping[int(m.group(1))]}]" if int(m.group(1)) in mapping else m.group(0),
-        text,
-    )
+    def _renumber(match: re.Match) -> str:
+        cited = sorted(citation_indexes(match.group(0)))
+        if not all(idx in mapping for idx in cited):
+            return match.group(0)
+        return "[" + ", ".join(str(mapping[idx]) for idx in cited) + "]"
+
+    return CITATION_MARKER_RE.sub(_renumber, text)
 
 
 def _format_three_part_answer(answer: _ModelAnswer, question: str, used_chunks: list, period_str: str) -> str:
@@ -232,7 +237,7 @@ class GroundedGenerator:
                 return _outcome(AnswerStatus.REJECTED, UNSUPPORTED_QUESTION_ANSWER)
 
             conclusion_text = answer.body_text()
-            referenced = {int(m) for m in CITATION_MARKER_RE.findall(conclusion_text)}
+            referenced = citation_indexes(conclusion_text)
             if any(not 1 <= idx <= source_count for idx in referenced):
                 logger.info("Chat answer rejected: marker outside sources %s", sorted(referenced))
                 return _outcome(AnswerStatus.REJECTED, UNSUPPORTED_QUESTION_ANSWER)
@@ -260,6 +265,18 @@ class GroundedGenerator:
             ungrounded_figures = find_ungrounded_numbers(
                 question, conclusion_text, used_chunks, period_str=period_str, calc_hint=calc_hint
             )
+            if ungrounded_figures and (
+                backfilled := backfill_sources_for_figures(
+                    question, conclusion_text, used_chunks, retrieved_chunks, period_str=period_str, calc_hint=calc_hint
+                )
+            ):
+                logger.info("Chat answer cited other retrieved sources for figures %s", ungrounded_figures)
+                used_indexes += [
+                    next(i for i, hit in enumerate(retrieved_chunks, start=1) if hit is extra)
+                    for extra in backfilled[len(used_chunks):]
+                ]
+                used_chunks = backfilled
+                ungrounded_figures = []
             if ungrounded_figures:
                 logger.info("Chat answer mentions ungrounded figures %s (attempt %d)", ungrounded_figures, attempt + 1)
                 retry_note = (

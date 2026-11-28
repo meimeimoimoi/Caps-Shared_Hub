@@ -228,7 +228,7 @@ class ScopeRouterTests(unittest.TestCase):
             with (
                 patch("app.main.init_qdrant"),
                 patch("app.modules.rag.router.llm_model") as mock_llm,
-                patch("app.api.routes.TemporalRetriever.retrieve", return_value=[]),
+                patch("app.api.routes.TemporalRetriever.retrieve_for_chat", return_value=[]),
             ):
                 mock_llm.invoke.return_value = llm_reply
                 client = TestClient(app)
