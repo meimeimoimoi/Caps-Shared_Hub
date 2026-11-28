@@ -10,7 +10,8 @@ public sealed record PayoutSummary(
     int DueSoon,
     int Ready,
     int WaitingForAccount,
-    long AmountToSend
+    long AmountToSend,
+    int HeldPastReview
 )
 {
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
@@ -24,11 +25,21 @@ public sealed record PayoutSummary(
         int overdue = 0,
             dueSoon = 0,
             ready = 0,
-            waiting = 0;
+            waiting = 0,
+            heldPastReview = 0;
         long overdueAmount = 0,
             toSend = 0;
         foreach (var payout in unsent)
         {
+            // A held payout waits for its review, not for an account; staff must decide once the review date passed
+            if (payout.IsHeld)
+            {
+                if (now > payout.HoldReviewBy)
+                {
+                    heldPastReview++;
+                }
+                continue;
+            }
             if (now < payout.TransferableFrom)
             {
                 continue;
@@ -56,7 +67,7 @@ public sealed record PayoutSummary(
                 ready++;
             }
         }
-        return new(overdue, overdueAmount, dueSoon, ready, waiting, toSend);
+        return new(overdue, overdueAmount, dueSoon, ready, waiting, toSend, heldPastReview);
     }
 
     /// <summary>Whole Vietnam days since the hold ended.</summary>

@@ -232,6 +232,12 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasDefaultValueSql("now()")
                 .IsRequired();
             e.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            e.Property(x => x.HoldReason).HasColumnName("hold_reason").HasMaxLength(1000);
+            e.Property(x => x.HeldBy).HasColumnName("held_by");
+            e.Property(x => x.HeldAt).HasColumnName("held_at");
+            e.Property(x => x.HoldReviewBy).HasColumnName("hold_review_by");
+            e.Property(x => x.ReleasedAt).HasColumnName("released_at");
+            e.Property(x => x.TransferFee).HasColumnName("transfer_fee");
 
             e.HasIndex(x => new { x.Status, x.CreatedAt })
                 .HasDatabaseName("ix_payout_transaction_4");
@@ -275,7 +281,8 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
         {
             e.ToTable("payout_status_history");
             e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
+            // The domain sets the id: a row added to a loaded payout's history must be inserted, not updated
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.PayoutId).HasColumnName("payout_id");
             e.HasIndex(x => x.PayoutId);
             e.Property(x => x.Status).HasColumnName("status").IsRequired();

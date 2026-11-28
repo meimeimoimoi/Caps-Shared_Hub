@@ -1,5 +1,6 @@
 using System.Globalization;
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Application.Common;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Application.Features.Payouts;
 using Caps.Billing.Domain;
@@ -268,6 +269,35 @@ public sealed class PayoutTransferTests
         Assert.Equal("PROCESSING", (await store.Transfer()).Status);
     }
 
+    // Advisor 2026-11-28: a hold needs a reason and a review date, and the payout cannot be sent while held
+    [Fact]
+    public async Task A_held_payout_cannot_be_sent_until_released()
+    {
+        var store = new Store(Account(isDefault: true));
+        Assert.Equal(
+            "PAYOUT_HOLD_INVALID",
+            Assert
+                .Throws<AppException>(() => store.Payout.Hold(Guid.NewGuid(), "nghi ngo", 7, Now))
+                .Code
+        );
+        await store.Hold(release: false, "Nghi dùng tài khoản của người khác");
+
+        var error = await Assert.ThrowsAsync<AppException>(store.Transfer);
+        Assert.Equal("PAYOUT_HELD", error.Code);
+        Assert.Empty(store.Gateway.Orders);
+
+        await store.Hold(release: true, "Đã xác minh chủ tài khoản");
+        store.Gateway.Next = new(new("po_1", PayoutStatus.Succeeded, null), null);
+        var paid = await store.Transfer();
+
+        // The platform pays the transfer fee; the history keeps who held and released it, and why
+        Assert.Equal(("SUCCEEDED", 3_300L, 450_000L), (paid.Status, paid.TransferFee, paid.Amount));
+        var hold = Assert.Single(paid.History, h => h.Status == "ON_HOLD");
+        Assert.Equal("Nghi dùng tài khoản của người khác", hold.Note);
+        Assert.Single(paid.History, h => h.Status == "RELEASED");
+        Assert.Equal(["HELD", "RELEASED", "SUCCEEDED"], store.Outbox.Sent.Select(x => x.Change));
+    }
+
     // Held for 7 calendar days after settlement (agreed with the advisor on 2026-11-28)
     [Fact]
     public async Task A_payout_cannot_be_sent_before_the_hold_ends()
@@ -400,6 +430,14 @@ public sealed class PayoutTransferTests
         public Gateway Gateway { get; } = new();
         public Clock Clock { get; } = new();
         public FakeNotificationOutbox Outbox { get; } = new();
+        public PayoutFeePolicy Fees { get; } = new(3_300);
+
+        public Task<PayoutResponse> Hold(bool release, string reason) =>
+            new HoldPayoutHandler(this, Outbox, this, Clock, WorkCalendar.WeekendsOnly).HandleAsync(
+                new(Payout.Id, Guid.NewGuid(), release, reason),
+                default
+            );
+
         public string? StatusAtSubmit { get; private set; }
         public int CommitsAtSubmit { get; private set; }
 
@@ -412,7 +450,8 @@ public sealed class PayoutTransferTests
                 this,
                 Clock,
                 WorkCalendar.WeekendsOnly,
-                Outbox
+                Outbox,
+                Fees
             ).HandleAsync(new(Payout.Id, Staff), default);
 
         public Task<PayoutResponse> Refresh() =>
@@ -422,7 +461,8 @@ public sealed class PayoutTransferTests
                 this,
                 Clock,
                 WorkCalendar.WeekendsOnly,
-                Outbox
+                Outbox,
+                Fees
             ).HandleAsync(new(Payout.Id), default);
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>

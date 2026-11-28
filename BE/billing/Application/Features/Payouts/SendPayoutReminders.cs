@@ -33,6 +33,7 @@ public sealed class SendPayoutRemindersHandler(
             // No verified account: the deadline waits; the expert is reminded on days 7, 14 and 30
             if (
                 now >= payout.TransferableFrom
+                && !payout.IsHeld
                 && payout.ReadyAt == null
                 && AccountReminderDays.Contains(PayoutSummary.DaysSinceHold(payout, now))
             )
@@ -41,7 +42,7 @@ public sealed class SendPayoutRemindersHandler(
             }
         }
         var s = PayoutSummary.Of(unsent, now, calendar);
-        if (s.Overdue + s.DueSoon + s.Ready + s.WaitingForAccount > 0)
+        if (s.Overdue + s.DueSoon + s.Ready + s.WaitingForAccount + s.HeldPastReview > 0)
         {
             outbox.Enqueue(
                 new PayoutDigestEvent(
@@ -51,6 +52,7 @@ public sealed class SendPayoutRemindersHandler(
                     s.DueSoon,
                     s.Ready,
                     s.WaitingForAccount,
+                    s.HeldPastReview,
                     s.AmountToSend,
                     await gateway.GetBalanceAsync(ct),
                     now

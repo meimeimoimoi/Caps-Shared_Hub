@@ -7,7 +7,9 @@ namespace Caps.Contracts;
 /// </summary>
 /// <param name="Id">Event id, also used to ignore a redelivered message.</param>
 /// <param name="Email">The expert's contact email from the review case; null tells them in-app only.</param>
-/// <param name="Change">RECORDED, SUCCEEDED, FAILED or ACCOUNT_NEEDED.</param>
+/// <param name="Change">
+/// RECORDED, SUCCEEDED, FAILED, ACCOUNT_NEEDED, ACCOUNT_MISSING, HELD (under review) or RELEASED.
+/// </param>
 public sealed record ExpertPayoutNoticeEvent(
     Guid Id,
     Guid ExpertUserId,
@@ -30,6 +32,7 @@ public sealed record PayoutDigestEvent(
     int DueSoon,
     int Ready,
     int WaitingForAccount,
+    int HeldPastReview,
     long AmountToSend,
     long? Balance,
     DateTimeOffset OccurredAt

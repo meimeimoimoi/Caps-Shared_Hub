@@ -68,6 +68,44 @@ public sealed class SendPayoutRemindersTests
         );
     }
 
+    // A held payout waits for its review, not for an account: no reminder, and staff hear once it is overdue
+    [Fact]
+    public async Task A_held_payout_is_counted_past_review_and_never_asked_for_an_account()
+    {
+        var held = Payout(NoAccount, holdEnds: new(2026, 11, 30, 8, 0, 0, Vn)); // day 14 if it were not held
+        held.Hold(
+            Guid.NewGuid(),
+            "Khách phản ánh sau khi hoàn tất",
+            7,
+            new(2026, 12, 1, 9, 0, 0, Vn)
+        );
+        var run = new Run(held);
+
+        await run.SendAsync();
+
+        Assert.Empty(run.Outbox.Sent);
+        var digest = Assert.Single(run.Outbox.Digests);
+        Assert.Equal((1, 0), (digest.HeldPastReview, digest.WaitingForAccount));
+    }
+
+    // Lifting a hold restarts the 2 working days from the release
+    [Fact]
+    public void Releasing_a_hold_restarts_the_deadline()
+    {
+        var payout = Payout(Verified, holdEnds: new(2026, 12, 7, 8, 0, 0, Vn));
+        var released = new DateTimeOffset(2026, 12, 10, 15, 0, 0, Vn);
+        payout.Hold(Guid.NewGuid(), "Khách phản ánh sau khi hoàn tất", 7, released.AddDays(-1));
+        Assert.Null(payout.DueAt(WorkCalendar.WeekendsOnly));
+
+        payout.Release(Guid.NewGuid(), "Phản ánh không có căn cứ", released);
+
+        Assert.Equal(released, payout.ReadyAt);
+        Assert.Equal(
+            new DateTimeOffset(2026, 12, 14, 15, 0, 0, Vn),
+            payout.DueAt(WorkCalendar.WeekendsOnly)
+        );
+    }
+
     [Fact]
     public async Task Nothing_ready_sends_no_summary()
     {

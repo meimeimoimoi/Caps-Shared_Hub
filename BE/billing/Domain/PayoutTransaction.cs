@@ -35,6 +35,20 @@ public sealed class PayoutTransaction
     public DateTimeOffset UpdatedAt { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
 
+    /// <summary>Why staff hold the payout for review (fraud, dispute, violation); null when it is not held.</summary>
+    public string? HoldReason { get; private set; }
+    public Guid? HeldBy { get; private set; }
+    public DateTimeOffset? HeldAt { get; private set; }
+
+    /// <summary>Staff must review a hold by then: no payout stays held indefinitely (advisor 2026-11-28).</summary>
+    public DateTimeOffset? HoldReviewBy { get; private set; }
+
+    /// <summary>When the last hold was lifted; the deadline restarts from then.</summary>
+    public DateTimeOffset? ReleasedAt { get; private set; }
+
+    /// <summary>What the transfer cost the platform (PayOS fee, borne by the platform); set once it succeeded.</summary>
+    public long? TransferFee { get; private set; }
+
     private readonly List<PayoutStatusHistory> history = [];
 
     /// <summary>Status changes, added and never edited; only the rows loaded or added in this unit of work.</summary>
@@ -54,15 +68,26 @@ public sealed class PayoutTransaction
 
     /// <summary>Working days staff have after the hold to send it (agreed with the advisor 2026-11-28).</summary>
     public const int DueWorkingDays = 2;
+    public const int MaxHoldReviewDays = 30;
+    public const int MinHoldReasonLength = 10;
+
+    public bool IsHeld => HoldReason != null;
 
     /// <summary>
     /// When the payout could first be sent: the hold end, or later when the expert's account was verified after
-    /// it; null while it has no verified account, so the deadline waits (advisor 2026-11-28).
+    /// it, or when a hold was lifted after both; null while held or without a verified account, so the deadline
+    /// waits (advisor 2026-11-28).
     /// </summary>
-    public DateTimeOffset? ReadyAt =>
-        BankAccount is { IsVerified: true, VerifiedAt: { } verifiedAt }
-            ? (verifiedAt > TransferableFrom ? verifiedAt : TransferableFrom)
-            : null;
+    public DateTimeOffset? ReadyAt
+    {
+        get
+        {
+            if (IsHeld || BankAccount is not { IsVerified: true, VerifiedAt: { } verifiedAt })
+                return null;
+            var ready = verifiedAt > TransferableFrom ? verifiedAt : TransferableFrom;
+            return ReleasedAt is { } released && released > ready ? released : ready;
+        }
+    }
 
     /// <summary>The deadline: 2 working days after ReadyAt, at the same Vietnam clock time.</summary>
     public DateTimeOffset? DueAt(WorkCalendar calendar) =>
@@ -131,6 +156,10 @@ public sealed class PayoutTransaction
     {
         if (!CanTransfer)
             throw BillingErrors.PayoutNotTransferable();
+        if (IsHeld)
+        {
+            throw BillingErrors.PayoutHeld(HoldReviewBy!.Value);
+        }
         if (now < TransferableFrom)
         {
             throw BillingErrors.PayoutOnHold(TransferableFrom);
@@ -150,7 +179,13 @@ public sealed class PayoutTransaction
     }
 
     /// <summary>Records what the provider reports for the current attempt; ignored once it is settled.</summary>
-    public void Apply(string providerRef, string status, string? error, DateTimeOffset now)
+    public void Apply(
+        string providerRef,
+        string status,
+        string? error,
+        DateTimeOffset now,
+        long feeOnSuccess = 0
+    )
     {
         if (Status != PayoutStatus.Processing)
             return;
@@ -159,7 +194,10 @@ public sealed class PayoutTransaction
         Status = status;
         LastError = status == PayoutStatus.Failed ? error ?? "FAILED" : null;
         if (status == PayoutStatus.Succeeded)
+        {
             CompletedAt = now;
+            TransferFee = feeOnSuccess;
+        }
         UpdatedAt = now;
         if (changed)
         {
@@ -185,6 +223,42 @@ public sealed class PayoutTransaction
         SnapBankName = account.BankName;
         SnapAccountLast4 = account.AccountLast4;
         SnapHolderName = account.AccountHolderName;
+    }
+
+    /// <summary>Staff hold an unsent payout for review, with a reason and a review deadline (1 to 30 days).</summary>
+    public void Hold(Guid staffId, string? reason, int reviewDays, DateTimeOffset now)
+    {
+        if (!CanTransfer)
+            throw BillingErrors.PayoutNotTransferable();
+        var text = reason?.Trim();
+        if (
+            IsHeld
+            || text is not { Length: >= MinHoldReasonLength }
+            || reviewDays is < 1 or > MaxHoldReviewDays
+        )
+        {
+            throw BillingErrors.PayoutHoldInvalid(MaxHoldReviewDays);
+        }
+        HoldReason = text;
+        HeldBy = staffId;
+        HeldAt = now;
+        HoldReviewBy = now.AddDays(reviewDays);
+        UpdatedAt = now;
+        history.Add(PayoutStatusHistory.Of(this, staffId, now, "ON_HOLD", text));
+    }
+
+    /// <summary>Staff lift the hold after review; the payout can be sent and its deadline restarts.</summary>
+    public void Release(Guid staffId, string? note, DateTimeOffset now)
+    {
+        if (!IsHeld)
+            throw BillingErrors.PayoutNotHeld();
+        HoldReason = null;
+        HeldBy = null;
+        HeldAt = null;
+        HoldReviewBy = null;
+        ReleasedAt = now;
+        UpdatedAt = now;
+        history.Add(PayoutStatusHistory.Of(this, staffId, now, "RELEASED", note?.Trim()));
     }
 
     private void Record(Guid? actorUserId, DateTimeOffset now) =>

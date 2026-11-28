@@ -20,7 +20,8 @@ public sealed class RefreshPayoutHandler(
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     WorkCalendar calendar,
-    IBillingNotificationOutbox outbox
+    IBillingNotificationOutbox outbox,
+    PayoutFeePolicy fees
 ) : ICommandHandler<RefreshPayoutCommand, PayoutResponse>
 {
     /// <summary>
@@ -43,7 +44,7 @@ public sealed class RefreshPayoutHandler(
         var report = await gateway.FindAsync(payout.ProviderRef, payout.Reference, ct);
         var now = clock.GetUtcNow();
         if (report != null)
-            payout.Apply(report.ProviderRef, report.Status, report.Error, now);
+            payout.Apply(report.ProviderRef, report.Status, report.Error, now, fees.PerTransfer);
         else if (payout.ProviderRef == null && now - payout.UpdatedAt >= NotReceivedAfter)
             payout.Fail("NOT_RECEIVED", now);
         // It was PROCESSING above: tell the expert only once PayOS settled it

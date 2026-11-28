@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Caps.Billing.Api.DTOs.Requests;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Application.Features.Payouts;
 using Caps.Common.Api;
@@ -116,6 +117,40 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
     )
     {
         var payout = await handler.HandleAsync(new(payoutId), ct);
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Holds an unsent payout for review: a reason (10+ characters) and a review deadline (1–30 days).</summary>
+    /// <response code="200">Held; it cannot be sent and its deadline waits.</response>
+    /// <response code="409">PAYOUT_NOT_TRANSFERABLE (being sent or paid).</response>
+    /// <response code="422">PAYOUT_HOLD_INVALID.</response>
+    [HttpPost("{payoutId:guid}/hold")]
+    public async Task<IActionResult> Hold(
+        Guid payoutId,
+        HoldPayoutRequest r,
+        [FromServices] ICommandHandler<HoldPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(
+            new(payoutId, UserId, false, r.Reason, r.ReviewDays),
+            ct
+        );
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Lifts a hold after review, with an optional note; the deadline restarts.</summary>
+    /// <response code="200">Released.</response>
+    /// <response code="409">PAYOUT_NOT_HELD.</response>
+    [HttpPost("{payoutId:guid}/release")]
+    public async Task<IActionResult> Release(
+        Guid payoutId,
+        ReleasePayoutRequest r,
+        [FromServices] ICommandHandler<HoldPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(new(payoutId, UserId, true, r.Note), ct);
         return Ok(ApiResponse<PayoutResponse>.Ok(payout));
     }
 }

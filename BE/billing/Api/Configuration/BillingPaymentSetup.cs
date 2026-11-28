@@ -1,3 +1,4 @@
+using Caps.Billing.Application.Common;
 using Caps.Billing.Infrastructure.Payments;
 using Caps.Common.Domain;
 
@@ -18,6 +19,9 @@ public static class BillingPaymentSetup
         // Fixed solar holidays as MM-dd under WorkCalendar:Holidays, every year; Saturdays and Sundays never count
         services.AddSingleton(
             new WorkCalendar(config.GetSection("WorkCalendar:Holidays").Get<string[]>() ?? [])
+        );
+        services.AddSingleton(
+            new PayoutFeePolicy(config.GetValue("Billing:PayoutFeePerTransfer", 0L))
         );
         return services;
     }

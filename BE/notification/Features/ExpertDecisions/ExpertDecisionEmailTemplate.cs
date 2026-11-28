@@ -341,6 +341,16 @@ public static class ExpertDecisionEmailTemplate
                 new Issue("Sẵn sàng chuyển", $"{m.Ready} lệnh", "Đã hết thời gian giữ 7 ngày.")
             );
         }
+        if (m.HeldPastReview > 0)
+        {
+            lines.Add(
+                new Issue(
+                    "Tạm giữ quá hạn rà soát",
+                    $"{m.HeldPastReview} lệnh",
+                    "Đã quá hạn rà soát; cần quyết định bỏ tạm giữ hoặc xử lý tiếp."
+                )
+            );
+        }
         if (m.WaitingForAccount > 0)
         {
             lines.Add(
@@ -498,6 +508,18 @@ public static class ExpertDecisionEmailTemplate
                 "Cần tài khoản nhận tiền khác",
                 $"Shared Hub đã chuyển {amount} nhiều lần nhưng chưa thành công. Hãy thêm một tài khoản ngân hàng khác đứng tên bạn; sau khi tài khoản được xác minh, khoản tiền sẽ được chuyển lại.",
                 "Cập nhật tài khoản"
+            ),
+            "HELD" => new Copy(
+                $"Khoản thu nhập đang được rà soát – {Brand}",
+                "Khoản thu nhập đang được rà soát",
+                $"Khoản {amount} đang được Shared Hub rà soát trước khi chuyển. Chúng tôi sẽ báo bạn ngay khi rà soát xong.",
+                "Xem thu nhập"
+            ),
+            "RELEASED" => new Copy(
+                $"Khoản thu nhập đã rà soát xong – {Brand}",
+                "Khoản thu nhập đã rà soát xong",
+                $"Khoản {amount} đã được rà soát xong và sẽ được chuyển vào tài khoản ngân hàng đã xác minh của bạn.",
+                "Xem thu nhập"
             ),
             "ACCOUNT_MISSING" => new Copy(
                 $"Bạn chưa có tài khoản nhận tiền – {Brand}",

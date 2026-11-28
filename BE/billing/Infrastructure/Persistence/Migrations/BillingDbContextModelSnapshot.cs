@@ -402,7 +402,6 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Caps.Billing.Domain.PayoutStatusHistory", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -473,6 +472,23 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<DateTimeOffset?>("HeldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("held_at");
+
+                    b.Property<Guid?>("HeldBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("held_by");
+
+                    b.Property<string>("HoldReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("hold_reason");
+
+                    b.Property<DateTimeOffset?>("HoldReviewBy")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hold_review_by");
+
                     b.Property<string>("LastError")
                         .HasColumnType("text")
                         .HasColumnName("last_error");
@@ -501,6 +517,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("recipient_user_id");
 
+                    b.Property<DateTimeOffset?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("released_at");
+
                     b.Property<Guid>("SettlementId")
                         .HasColumnType("uuid")
                         .HasColumnName("settlement_id");
@@ -527,6 +547,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("PENDING")
                         .HasColumnName("status");
+
+                    b.Property<long?>("TransferFee")
+                        .HasColumnType("bigint")
+                        .HasColumnName("transfer_fee");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()

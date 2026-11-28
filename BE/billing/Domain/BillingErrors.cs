@@ -157,6 +157,23 @@ public static class BillingErrors
             $"The PayOS payout account holds {balance} VND, less than this payout."
         );
 
+    public static AppException PayoutHeld(DateTimeOffset reviewBy) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_HELD",
+            $"The payout is on hold for review until {reviewBy:O}."
+        );
+
+    public static AppException PayoutNotHeld() =>
+        new(ErrorType.Conflict, "PAYOUT_NOT_HELD", "The payout is not on hold.");
+
+    public static AppException PayoutHoldInvalid(int maxDays) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_HOLD_INVALID",
+            $"A hold needs a reason of at least 10 characters and a review within 1 to {maxDays} days."
+        );
+
     public static AppException AiCreditHoldNotFound() =>
         new(
             ErrorType.NotFound,
