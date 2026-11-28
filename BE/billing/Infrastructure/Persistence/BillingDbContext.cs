@@ -241,6 +241,27 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .WithMany()
                 .HasForeignKey(x => x.BankAccountId)
                 .HasConstraintName("fk_payout_transaction_61");
+
+            e.HasMany(x => x.History)
+                .WithOne()
+                .HasForeignKey(x => x.PayoutId)
+                .HasConstraintName("fk_payout_status_history_payout");
+        });
+
+        // PayoutStatusHistory: append-only audit of every payout status change
+        modelBuilder.Entity<PayoutStatusHistory>(e =>
+        {
+            e.ToTable("payout_status_history");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.PayoutId).HasColumnName("payout_id");
+            e.HasIndex(x => x.PayoutId);
+            e.Property(x => x.Status).HasColumnName("status").IsRequired();
+            e.Property(x => x.AttemptNo).HasColumnName("attempt_no");
+            e.Property(x => x.AccountLast4).HasColumnName("account_last4");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.At).HasColumnName("at").IsRequired();
         });
 
         // Dispute

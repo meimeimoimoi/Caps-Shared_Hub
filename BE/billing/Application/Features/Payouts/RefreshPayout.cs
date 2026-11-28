@@ -2,6 +2,7 @@ using Caps.Billing.Application.Abstractions;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.Application.Features.Payouts;
 
@@ -16,7 +17,8 @@ public sealed class RefreshPayoutHandler(
     IPayoutRepository payouts,
     IPayoutGateway gateway,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar calendar
 ) : ICommandHandler<RefreshPayoutCommand, PayoutResponse>
 {
     /// <summary>
@@ -34,7 +36,7 @@ public sealed class RefreshPayoutHandler(
         var payout =
             await payouts.LockAsync(command.PayoutId, ct) ?? throw BillingErrors.PayoutNotFound();
         if (payout.Status != PayoutStatus.Processing)
-            return PayoutResponse.From(payout);
+            return PayoutResponse.From(payout, calendar);
 
         var report = await gateway.FindAsync(payout.ProviderRef, payout.Reference, ct);
         var now = clock.GetUtcNow();
@@ -44,6 +46,6 @@ public sealed class RefreshPayoutHandler(
             payout.Fail("NOT_RECEIVED", now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return PayoutResponse.From(payout);
+        return PayoutResponse.From(payout, calendar);
     }
 }

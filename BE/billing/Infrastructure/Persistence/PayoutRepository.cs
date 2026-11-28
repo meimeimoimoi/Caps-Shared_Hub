@@ -26,7 +26,7 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
                     ? source.OrderByDescending(x => x.CreatedAt)
                     : source.OrderBy(x => x.CreatedAt);
         var stable = descending ? ordered.ThenByDescending(x => x.Id) : ordered.ThenBy(x => x.Id);
-        return await stable.Skip(skip).Take(take).ToListAsync(ct);
+        return await stable.Include(x => x.History).Skip(skip).Take(take).ToListAsync(ct);
     }
 
     public Task<int> CountAsync(string? status, CancellationToken ct) =>

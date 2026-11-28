@@ -18,7 +18,7 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("billing")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -395,6 +395,49 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.ToTable("payment_transaction", "billing");
                 });
 
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountLast4")
+                        .HasColumnType("text")
+                        .HasColumnName("account_last4");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<int>("AttemptNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_no");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("PayoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payout_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayoutId");
+
+                    b.ToTable("payout_status_history", "billing");
+                });
+
             modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -559,6 +602,16 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.Navigation("PaymentTransaction");
                 });
 
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutStatusHistory", b =>
+                {
+                    b.HasOne("Caps.Billing.Domain.PayoutTransaction", null)
+                        .WithMany("History")
+                        .HasForeignKey("PayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_payout_status_history_payout");
+                });
+
             modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
                 {
                     b.HasOne("Caps.Billing.Domain.BankAccount", "BankAccount")
@@ -576,6 +629,11 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.Navigation("BankAccount");
 
                     b.Navigation("Settlement");
+                });
+
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
+                {
+                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("Caps.Billing.Domain.Settlement", b =>

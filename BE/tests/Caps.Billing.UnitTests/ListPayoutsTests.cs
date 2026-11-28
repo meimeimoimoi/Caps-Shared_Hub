@@ -1,6 +1,7 @@
 using Caps.Billing.Application.Abstractions;
 using Caps.Billing.Application.Features.Payouts;
 using Caps.Billing.Domain;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.UnitTests;
 
@@ -19,7 +20,7 @@ public sealed class ListPayoutsTests
     )
     {
         var repository = new Payouts();
-        var page = await new ListPayoutsHandler(repository).HandleAsync(
+        var page = await new ListPayoutsHandler(repository, WorkCalendar.WeekendsOnly).HandleAsync(
             new(" pending ", 3, 10, requested, descending),
             CancellationToken.None
         );

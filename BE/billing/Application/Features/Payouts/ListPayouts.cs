@@ -2,6 +2,7 @@ using Caps.Billing.Application.Abstractions;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.Application.Features.Payouts;
 
@@ -15,7 +16,7 @@ public sealed record ListPayoutsQuery(
 );
 
 /// <summary>Newest first; released escrows create the expert payouts.</summary>
-public sealed class ListPayoutsHandler(IPayoutRepository payouts)
+public sealed class ListPayoutsHandler(IPayoutRepository payouts, WorkCalendar calendar)
     : IQueryHandler<ListPayoutsQuery, PayoutPageResponse>
 {
     public const int MaxPageSize = 100;
@@ -36,7 +37,7 @@ public sealed class ListPayoutsHandler(IPayoutRepository payouts)
             query.SortBy == "amount" ? "amount" : "createdAt",
             query.SortDescending
         );
-        var items = page.Select(PayoutResponse.From).ToArray();
+        var items = page.Select(x => PayoutResponse.From(x, calendar)).ToArray();
         return new PayoutPageResponse(items, query.Page, query.PageSize, total);
     }
 }
