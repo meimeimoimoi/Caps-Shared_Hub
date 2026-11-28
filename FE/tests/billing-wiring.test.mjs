@@ -232,7 +232,7 @@ test('bank review lists by status and posts verify and reject with the reason', 
   ])
 })
 
-test('expert names are keyed by account id for the review table', async () => {
+test('expert names are keyed by account id, with their risk signals', async () => {
   const { getExpertNames } = billing(
     'features/disputes-escrow/api/bankReviewApi.ts',
     {
@@ -240,16 +240,31 @@ test('expert names are keyed by account id for the review table', async () => {
         assert.equal(url, '/api/v1/admin/experts/managed')
         return {
           data: [
-            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
-            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn', status: 'SUSPENDED', accountStatus: 'SUSPENDED', violationPoints: 6 },
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn', status: 'APPROVED_FOR_SERVICE', accountStatus: 'SUSPENDED', violationPoints: 6 },
+            { expertUserId: 'u2', displayName: 'Trần B', email: 'b@x.vn', status: 'APPROVED_FOR_SERVICE' },
           ],
         }
       },
     }
   )
   const names = await getExpertNames()
-  assert.equal(names.size, 1)
-  assert.deepEqual(names.get('u1'), { name: 'Nguyễn Văn A', email: 'a@x.vn' })
+  assert.equal(names.size, 2)
+  // One suspended service is enough to flag the expert, whatever order the rows come in
+  assert.deepEqual(names.get('u1'), {
+    name: 'Nguyễn Văn A',
+    email: 'a@x.vn',
+    accountStatus: 'SUSPENDED',
+    violationPoints: 6,
+    serviceSuspended: true,
+  })
+  assert.deepEqual(names.get('u2'), {
+    name: 'Trần B',
+    email: 'b@x.vn',
+    accountStatus: null,
+    violationPoints: 0,
+    serviceSuspended: false,
+  })
 })
 
 test('bank review errors become staff messages', async () => {

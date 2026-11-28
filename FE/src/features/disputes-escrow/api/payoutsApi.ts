@@ -17,6 +17,8 @@ export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
 export interface Payout {
   id: string
   settlementId: string
+  /** The review case the payout settles; null in a transfer's own response */
+  reviewCaseId: string | null
   payoutType: string
   recipientUserId: string
   amount: number

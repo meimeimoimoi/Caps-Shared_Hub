@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatDateTime } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
@@ -77,6 +78,44 @@ export function PayoutsTable() {
     STATUSES.includes(s as PayoutStatus)
       ? t(`payouts.status.${s as PayoutStatus}`)
       : s
+
+  // What staff weigh before paying or holding (advisor 2026-11-28); the decision stays theirs
+  const signals = (p: Payout) => {
+    const expert = payouts.names?.get(p.recipientUserId)
+    const badge = 'mt-1 block text-xs font-semibold underline-offset-2 hover:underline'
+    return (
+      <>
+        {expert?.accountStatus && expert.accountStatus !== 'ACTIVE' && (
+          <Link to="/admin/users" className={`${badge} text-danger`}>
+            {t('payouts.signals.account', { status: expert.accountStatus })}
+          </Link>
+        )}
+        {(expert?.violationPoints ?? 0) > 0 && (
+          <Link to="/admin/experts" className={`${badge} text-warning`}>
+            {t('payouts.signals.violations', { count: expert!.violationPoints })}
+          </Link>
+        )}
+        {expert?.serviceSuspended && (
+          <Link to="/admin/experts" className={`${badge} text-warning`}>
+            {t('payouts.signals.serviceSuspended')}
+          </Link>
+        )}
+        {p.reviewCaseId && payouts.disputedCases.has(p.reviewCaseId) && (
+          <Link
+            to={`/admin/disputes/${p.reviewCaseId}`}
+            className={`${badge} text-warning`}
+          >
+            {t('payouts.signals.disputed')}
+          </Link>
+        )}
+        {p.reviewCaseId && (
+          <span className="num text-fg-muted mt-1 block text-xs">
+            {t('payouts.signals.case', { id: p.reviewCaseId.slice(0, 8) })}
+          </span>
+        )}
+      </>
+    )
+  }
 
   const stageLine = (p: Payout) => {
     const stage = stageOf(p, now)
@@ -401,6 +440,7 @@ export function PayoutsTable() {
                       {p.recipientUserId}
                     </span>
                   )}
+                  {signals(p)}
                 </td>
                 <td>
                   {p.bankName ? (
