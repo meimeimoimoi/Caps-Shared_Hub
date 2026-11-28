@@ -9,7 +9,6 @@ from app.schemas.ingestion_dto import IngestDocRequest
 class ChunkValidationError(ValueError):
     """Raised when an ingestion request has empty chunks or invalid effective dates."""
 
-MAX_CLAUSE_CHARS = 1500
 MAX_CHUNK_CHARS = 2000
 MIN_BODY_CHARS = 500
 MAX_SHARED_LEAD_CHARS = 600
