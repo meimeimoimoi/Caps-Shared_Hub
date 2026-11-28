@@ -515,6 +515,20 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, "bạn", m.Email!, m.OccurredAt, link, []);
     }
 
+    public static Content Build(ExpertBankAccountRejectedEvent m, string link)
+    {
+        var copy = new Copy(
+            $"Tài khoản nhận tiền chưa được xác minh – {Brand}",
+            "Tài khoản nhận tiền chưa được xác minh",
+            $"Tài khoản {m.BankName} •••• {m.AccountLast4} của bạn chưa được xác minh. Hãy thêm một tài khoản ngân hàng khác đứng tên bạn để nhận tiền.",
+            "Thêm tài khoản"
+        );
+        var reason = string.IsNullOrWhiteSpace(m.Reason)
+            ? new List<Issue>()
+            : [new Issue($"{m.BankName} •••• {m.AccountLast4}", "Lý do", m.Reason)];
+        return Render(copy, "bạn", m.Email!, m.OccurredAt, link, reason);
+    }
+
     private static string? Day(DateTimeOffset? at) =>
         at?.ToOffset(VietnamOffset).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
