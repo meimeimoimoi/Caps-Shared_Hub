@@ -20,15 +20,13 @@ schema_version 2:
 import hashlib
 import json
 import re
-import zipfile
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
-from xml.etree import ElementTree
 
 from slugify import slugify
 
 import config
+from src.appendix import attachment_appendices
 from src.legal_parser import Article, ParsedDocument, Unit, parse_legal_text
 from src import vbhn
 from src.logger_setup import setup_logger
@@ -56,50 +54,6 @@ MIN_BODY_CHARS = 500
 def _iso(value: Optional[str]) -> Optional[str]:
     d = parse_vn_date(value)
     return d.isoformat() if d else None
-
-
-_W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-
-
-def _docx_text(path: str) -> str:
-    """Plain text of a .docx; each table row becomes one "cell | cell" line so form codes stay next to their names."""
-    root = ElementTree.fromstring(zipfile.ZipFile(path).read("word/document.xml"))
-
-    def para(p) -> str:
-        return "".join(t.text or "" for t in p.iter(f"{_W}t")).strip()
-
-    lines: List[str] = []
-    for block in root.find(f"{_W}body"):
-        if block.tag == f"{_W}p":
-            lines.append(para(block))
-        elif block.tag == f"{_W}tbl":
-            for row in block.iter(f"{_W}tr"):
-                cells = [" ".join(filter(None, map(para, c.iter(f"{_W}p")))) for c in row.iter(f"{_W}tc")]
-                lines.append(" | ".join(c for c in cells if c))
-    return "\n".join(line for line in lines if line)
-
-
-def _attachment_appendices(rec: dict, existing: List[dict]) -> List[dict]:
-    """Appendices shipped as separate .docx attachments (e.g. "Phụ lục I" of TT 89) are not in the page text."""
-    seen = {a["title"].casefold() for a in existing}
-    out: List[dict] = []
-    for att in rec.get("attachments") or []:
-        name, local = att.get("file_name") or "", att.get("local_path") or ""
-        start = name.casefold().find("phụ lục")
-        if start < 0 or not local.lower().endswith(".docx") or not Path(local).is_file():
-            continue
-        title = Path(name[start:]).stem.strip(" .")
-        if title.casefold() in seen:
-            continue
-        try:
-            text = _docx_text(local)
-        except (zipfile.BadZipFile, KeyError, ElementTree.ParseError) as e:
-            logger.warning(f"[{rec.get('so_hieu')}] cannot read appendix {name}: {e}")
-            continue
-        if text:
-            seen.add(title.casefold())
-            out.append({"title": title, "text": text})
-    return out
 
 
 # "... này có hiệu lực ... và áp dụng từ kỳ tính thuế thu nhập doanh nghiệp năm 2025" /
@@ -322,9 +276,11 @@ def build_payload(rec: dict) -> dict:
     source = rec.get("source") or "vbpl"
     parsed = parse_legal_text(text, consolidated=rec.get("loai_van_ban") == vbhn.DOC_TYPE)
     content = parsed.to_content_json()
-    content["appendices"] += _attachment_appendices(rec, content["appendices"])
-    chunks =build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
-    file_hash, file_hash_basis = _file_hash(rec, text)
+    attached = attachment_appendices(rec, content["appendices"])
+    content["appendices"] += attached
+    chunks = build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
+    # Appendix text is part of the hash, otherwise ingestion treats the re-export as already imported
+    file_hash, file_hash_basis = _file_hash(rec, "\n".join([text] + [a["text"] for a in attached]))
 
     return {
         "schema_version": SCHEMA_VERSION,
