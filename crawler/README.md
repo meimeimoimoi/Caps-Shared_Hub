@@ -94,7 +94,7 @@ Mỗi file khớp schema `knowledge` của backend (`BE/ingestion/Entities`):
 - `legal_source`: `document_number`, `doc_type`, `issuing_authority`, `title`
 - `knowledge_document`: `source = "CRAWL_VBPL"` / `"CRAWL_MOF"`, `file_hash` (sha256 toàn văn),
   ngày ISO `YYYY-MM-DD`, `content_json` (cây Chương/Điều/units giống trang duyệt knowledge-admin)
-- `chunks[]`: mỗi Khoản 1 chunk (Khoản dài > 1500 ký tự thì tách theo Điểm), có
+- `chunks[]`: mỗi Khoản 1 chunk, Khoản có Điểm thì mỗi Điểm 1 chunk (kèm câu dẫn của Khoản), có
   `article` / `clause` / `point`, `path` ("Điều 4 · Khoản 1") và `text` mở đầu bằng breadcrumb
 
 Những chỗ đánh số bất thường được ghi `warnings` / unit `status: "WARNING"` để duyệt tay.

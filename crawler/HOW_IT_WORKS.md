@@ -220,7 +220,7 @@ Luật hay viết: *"theo quy định tại **khoản 2 Điều 24 của Luật 
 | `content_json` | `knowledge_document.content_json` (bản **đã duyệt** trong DB) |
 
 **Đề xuất cho chunker mới** (chưa làm):
-1. Đọc `chapters → articles → units`. Mỗi chunk tương ứng một Khoản. Khoản quá dài (> ~1500 ký tự) thì tách theo Điểm, nhưng **giữ câu dẫn** của Khoản trong mọi phần.
+1. Đọc `chapters → articles → units`. Khoản không có Điểm là một chunk. Khoản có Điểm thì mỗi Điểm một chunk, và chunk nào cũng **giữ câu dẫn** của Khoản.
 2. Đầu mỗi chunk có "địa chỉ": `Văn bản <số hiệu> — Điều 5. <tên Điều> — Khoản 3`. Logic sẵn có để chép theo: `build_chunks` trong [crawler/src/exporter.py](src/exporter.py).
 3. Payload Qdrant: `article`, `clause`, `point`, `unit id`, `effective_from/to`, cộng `amendments` (nếu có) và `references` (nếu có).
 4. Ingest lại cùng văn bản phải **xoá point cũ** theo `knowledge_document_id` (hiện dùng `uuid4` ngẫu nhiên nên sẽ bị trùng).

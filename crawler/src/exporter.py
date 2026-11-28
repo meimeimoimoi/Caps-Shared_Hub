@@ -47,8 +47,6 @@ def get_export_dir():
 # Giá trị `knowledge_document.source` theo nguồn cào. Lưu ý: ràng buộc ck_kd_source
 # trong BE/SHFT_PostgreSQL.sql hiện chỉ cho CRAWL_VBPL/MANUAL_UPLOAD -> cần thêm CRAWL_MOF.
 SOURCE_CODES = {"vbpl": "CRAWL_VBPL", "mof": "CRAWL_MOF"}
-# Khoản dài hơn ngưỡng này thì tách mỗi Điểm thành 1 chunk riêng
-MAX_CLAUSE_CHARS = 1500
 # Trần độ dài toàn bộ `text` của 1 chunk (header + thân) để embedding không bị cắt cụt
 MAX_CHUNK_CHARS = 2000
 # Thân chunk tối thiểu khi header quá dài, tránh tách thành các mẩu vụn
@@ -206,9 +204,9 @@ def _doc_label(rec: dict) -> str:
 
 def _chunk_groups(article: Article) -> List[List[Unit]]:
     """
-    Gom unit thành nhóm chunk: mỗi Khoản (kèm các Điểm) là 1 chunk; Khoản quá
-    dài thì mỗi Điểm 1 chunk (phần dẫn của Khoản đi chung chunk đầu tiên).
-    Đoạn mở đầu của Điều (trước Khoản 1) là 1 chunk riêng.
+    Group units into chunks: a Khoản without Điểm is one chunk; each Điểm is its own
+    chunk carrying the Khoản lead-in, so citations can point at the Điểm.
+    The Điều intro (before Khoản 1) is its own chunk.
     """
     groups: List[List[Unit]] = []
     by_clause: dict = {}
@@ -221,15 +219,10 @@ def _chunk_groups(article: Article) -> List[List[Unit]]:
 
     out: List[List[Unit]] = []
     for group in groups:
-        size = sum(len(u.text) for u in group)
-        has_points = any(u.point for u in group)
-        if size <= MAX_CLAUSE_CHARS or not has_points:
-            out.append(group)
-            continue
         lead = [u for u in group if not u.point]
         points = [u for u in group if u.point]
-        out.append(lead + points[:1])
-        out.extend([p] for p in points[1:])
+        # The lead-in ("Các khoản chi không được trừ gồm:") changes what the Điểm means
+        out.extend([lead + [p] for p in points] or [group])
     return out
 
 
@@ -254,9 +247,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
             groups = _chunk_groups(article) or [[]]
             for group in groups:
                 clause = next((u.clause for u in group if u.clause), None)
-                points = [u.point for u in group if u.point]
-                # Chunk tách theo Điểm thì ghi Điểm; chunk cả Khoản thì để trống
-                point = points[0] if len(points) == 1 and all(u.point for u in group) else None
+                point = next((u.point for u in group if u.point), None)
                 path = " · ".join(
                     p for p in (
                         f"{article.kind} {article.number}",
@@ -270,6 +261,8 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                 crumbs.append(heading)
                 if clause:
                     crumbs.append(f"Khoản {clause}")
+                if point:
+                    crumbs.append(f"Điểm {point}")
                 header = " — ".join(crumbs)
                 body = "\n".join(_numbered(u) for u in group if u.text) or article.title or ""
                 limit = max(MAX_CHUNK_CHARS - len(header) - 1, MIN_BODY_CHARS)
