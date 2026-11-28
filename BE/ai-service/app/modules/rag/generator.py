@@ -16,6 +16,7 @@ from app.modules.rag.guardrails import (
     allowed_document_numbers_from_chunks,
     backfill_sources_for_figures,
     citation_indexes,
+    contradicts_non_deductible_rule,
     drops_critical_condition,
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
@@ -302,6 +303,11 @@ class GroundedGenerator:
                     "trong đoạn căn cứ là KHÔNG được trừ (không tính vào chi phí được trừ). "
                     "Hãy viết lại đúng nguyên văn quy định và bỏ câu phụ dư thừa."
                 )
+                continue
+
+            if deduction_note := contradicts_non_deductible_rule(question, conclusion_text, retrieved_chunks):
+                logger.info("Chat answer called a non-deductible expense deductible (attempt %d)", attempt + 1)
+                retry_note = deduction_note
                 continue
 
             if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks, retrieved_chunks):

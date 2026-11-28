@@ -323,6 +323,143 @@ def has_reversed_cap_polarity(conclusion: str, used_chunks: list) -> bool:
     return False
 
 
+_DEDUCTIBILITY_QUESTION_RE = re.compile(
+    r"\b(?:được\s+trừ|tính\s+(?:vào\s+)?chi\s+phí|chi\s+phí\s+được\s+trừ)\b", re.IGNORECASE
+)
+_AFFIRMS_DEDUCTIBLE_RE = re.compile(
+    r"\b(?:được\s+(?:trừ|tính\s+(?:vào\s+)?chi\s+phí)|tính\s+vào\s+chi\s+phí\s+được\s+trừ)\b", re.IGNORECASE
+)
+_DENIES_DEDUCTIBLE_RE = re.compile(
+    r"\bkhông\s+(?:được\s+(?:trừ|tính)|tính\s+vào\s+chi\s+phí)|\bchỉ\s+được\s+(?:trừ|tính)|\bphần\s+vượt\b",
+    re.IGNORECASE,
+)
+# The article title in the chunk breadcrumb, not "Trừ các khoản chi không được trừ ..." inside Điều 9 (CP-16).
+_NON_DEDUCTIBLE_HEADING_RE = re.compile(r"\bĐiều\s+\d+\.\s+Các\s+khoản\s+chi\s+không\s+được\s+trừ\b", re.IGNORECASE)
+_YES_NO_DEDUCTIBLE_RE = re.compile(r"\bcó\s+(?:được|phải)\b.*\bkhông\b|\bkhông\s*\?", re.IGNORECASE)
+# A cap item ("phần chi vượt mức ...") is partly deductible; has_reversed_cap_polarity handles it.
+_PARTIAL_CAP_ITEM_RE = re.compile(r"\b(?:phần|khoản)\s+(?:chi\s+)?(?:trả\s+)?vượt\b|\bvượt\s+(?:mức|trên)\b", re.IGNORECASE)
+_LIST_ITEM_SPLIT_RE = re.compile(r";|\n|\s(?=[a-zđ]\d?\)\s)|\s(?=\d{1,2}\.\s)")
+_WORD_RE = re.compile(r"[^\W\d_]+")
+# Words shared by most CIT questions and law items; a phrase made only of them says nothing about the topic.
+_GENERIC_WORDS = frozenset(
+    "chi phí được trừ có không tính vào thu nhập chịu thuế xác định doanh nghiệp công ty tndn khoản các khi này "
+    "phải sản xuất kinh hoạt động năm của cho và là với trong đã bị người lao hợp trường quy theo đối tượng".split()
+)
+# The question's wording and the law's wording for the same expense.
+_QUESTION_SYNONYMS = (("đồng phục", "trang phục"),)
+_CASH_THRESHOLD_RE = re.compile(r"(?:từ\s+)?(\d+(?:[.,]\d+)?)\s*triệu\s+đồng\s+trở\s+lên", re.IGNORECASE)
+_REPEATED_PAYMENT_RE = re.compile(
+    r"(\d+)\s*lần[^.;\n]{0,20}?mỗi\s+lần\s+(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn)", re.IGNORECASE
+)
+_QUESTION_AMOUNT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn)\b", re.IGNORECASE)
+_PER_PERSON_CAP_RE = re.compile(
+    r"không\s+quá\s+(\d+(?:[.,]\d+)?)\s*triệu\s+đồng\s*/\s*(?:01\s+|1\s+)?người\s*/\s*năm", re.IGNORECASE
+)
+
+
+def _topic_phrases(text: str, size: int) -> set[str]:
+    """Word n-grams of the text that contain at least one topic word."""
+    words = _WORD_RE.findall((text or "").lower())
+    grams = (words[i:i + size] for i in range(len(words) - size + 1))
+    return {" ".join(g) for g in grams if not all(w in _GENERIC_WORDS for w in g)}
+
+
+def _vnd(raw: str, unit: str) -> float | None:
+    value = parse_numeric_scalar(raw.replace(",", ".") if re.fullmatch(r"\d+,\d+", raw) else raw)
+    return value * UNIT_SCALE_VND[unit.lower()] if value is not None else None
+
+
+def _non_deductible_items(chunk_text: str) -> tuple[list[str], str]:
+    """List items of a retrieved chunk that the law marks as wholly non-deductible, plus their intro lines."""
+    under_heading = bool(_NON_DEDUCTIBLE_HEADING_RE.search(chunk_text))
+    lines = chunk_text.split("\n", 1)
+    # Drop the "Document — Điều N. Title — Khoản M" breadcrumb line so its words do not match the question.
+    body = lines[1] if len(lines) == 2 and " — " in lines[0] else chunk_text
+    items, intros = [], []
+    for item in _LIST_ITEM_SPLIT_RE.split(body):
+        item = item.strip()
+        # An intro such as "Chi khấu hao ... thuộc một trong các trường hợp sau:" is not an item (PV-06).
+        if item.endswith(":"):
+            intros.append(item)
+            continue
+        if len(item) < 20 or _PARTIAL_CAP_ITEM_RE.search(item):
+            continue
+        if under_heading or _NON_DEDUCTIBLE_RE.search(item):
+            items.append(item)
+    return items, " ".join(intros)
+
+
+def contradicts_non_deductible_rule(question: str, conclusion: str, retrieved_chunks: list) -> str | None:
+    """Return a retry note when the conclusion calls an expense deductible against a retrieved rule (task 20).
+
+    CP-05 late-payment interest and CP-13 interest on unpaid charter capital are listed as non-deductible;
+    CP-03 cash payments to one seller add up above the cash threshold; CP-08 exceeds a per-person yearly cap.
+    """
+    q_low = (question or "").lower()
+    for word, law_word in _QUESTION_SYNONYMS:
+        q_low = q_low.replace(word, law_word)
+    body = CITATION_MARKER_RE.sub(" ", conclusion or "")
+    if not _DEDUCTIBILITY_QUESTION_RE.search(q_low):
+        return None
+    if not _AFFIRMS_DEDUCTIBLE_RE.search(body) or _DENIES_DEDUCTIBLE_RE.search(body):
+        return None
+    q_trigrams, q_bigrams = _topic_phrases(q_low, 3), _topic_phrases(q_low, 2)
+
+    if _YES_NO_DEDUCTIBLE_RE.search(q_low):
+        for hit in retrieved_chunks or []:
+            text = str((hit.payload or {}).get("text_content") or "")
+            items, intro = _non_deductible_items(text)
+            for item in items:
+                # The shared phrase must name this case, not the intro all cases share (PV-06: "khấu hao tài sản cố định").
+                if (q_trigrams & _topic_phrases(item, 3)) - _topic_phrases(intro, 3):
+                    quote = item if len(item) <= 220 else item[:220].rsplit(" ", 1)[0] + " ..."
+                    return (
+                        "Kết luận trước nói khoản chi được trừ, nhưng đoạn căn cứ liệt kê khoản này là KHÔNG được trừ: "
+                        f"\"{quote}\". Hãy kết luận không được trừ, trích đúng đoạn căn cứ đó."
+                    )
+
+    law_text = _chunks_text(retrieved_chunks)
+    law_low = law_text.lower()
+
+    amounts = [_vnd(raw, unit) for raw, unit in _QUESTION_AMOUNT_RE.findall(q_low)]
+    asked = max((a for a in amounts if a is not None), default=None)
+    if asked is not None:
+        for cap_match in _PER_PERSON_CAP_RE.finditer(law_text):
+            context = law_text[max(0, cap_match.start() - 200):cap_match.start()]
+            cap = _vnd(cap_match.group(1), "triệu")
+            if cap is not None and asked > cap and q_bigrams & _topic_phrases(context, 2):
+                return (
+                    f"Kết luận trước cho trừ toàn bộ {asked / 1_000_000:g} triệu đồng, nhưng đoạn căn cứ chỉ cho trừ "
+                    f"không quá {cap / 1_000_000:g} triệu đồng/người/năm. Hãy nêu mức được trừ tối đa và phần vượt "
+                    "không được trừ."
+                )
+
+    # Purchases from a seller only; "chi tiền mặt mua đồng phục cho nhân viên" is a per-person cap question (CP-08).
+    buys_from_seller = bool(re.search(r"\bngười\s+bán\b|\bhóa\s+đơn\b", q_low) or _REPEATED_PAYMENT_RE.search(q_low))
+    if (
+        buys_from_seller
+        and "tiền mặt" in q_low
+        and "không dùng tiền mặt" in law_low
+        and "không dùng tiền mặt" not in body.lower()
+    ):
+        threshold_match = _CASH_THRESHOLD_RE.search(law_text)
+        repeated = _REPEATED_PAYMENT_RE.search(q_low)
+        if repeated:
+            each = _vnd(repeated.group(2), repeated.group(3))
+            total = each * int(repeated.group(1)) if each is not None else None
+        else:
+            amounts = [_vnd(raw, unit) for raw, unit in _QUESTION_AMOUNT_RE.findall(q_low)]
+            total = max((a for a in amounts if a is not None), default=None)
+        threshold = _vnd(threshold_match.group(1), "triệu") if threshold_match else None
+        if total is not None and threshold is not None and total >= threshold:
+            return (
+                f"Kết luận trước cho trừ khoản chi trả bằng tiền mặt, nhưng tổng số tiền ({total / 1_000_000:g} triệu đồng) "
+                f"từ {threshold / 1_000_000:g} triệu đồng trở lên thì chỉ được trừ khi có chứng từ thanh toán "
+                "không dùng tiền mặt theo đoạn căn cứ. Hãy kết luận không được trừ và nêu điều kiện đó."
+            )
+    return None
+
+
 def drops_critical_condition(question: str, conclusion: str, used_chunks: list) -> str | None:
     """Check that mandatory statutory eligibility conditions in cited chunks are not dropped (S02, A22)."""
     source_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks).lower()
