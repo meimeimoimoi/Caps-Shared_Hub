@@ -10,4 +10,5 @@ public interface IBillingNotificationOutbox
 {
     void Enqueue(ExpertPayoutNoticeEvent message, DateTimeOffset now);
     void Enqueue(PayoutDigestEvent message, DateTimeOffset now);
+    void Enqueue(ExpertBankAccountRejectedEvent message, DateTimeOffset now);
 }

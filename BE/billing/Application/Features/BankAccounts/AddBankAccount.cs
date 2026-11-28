@@ -12,7 +12,8 @@ public sealed record AddBankAccountCommand(
     string? BankName,
     string? AccountNumber,
     string? AccountHolderName,
-    bool MakeDefault
+    bool MakeDefault,
+    string? OwnerEmail = null
 );
 
 /// <summary>
@@ -59,7 +60,14 @@ public sealed class AddBankAccountHandler(
             current.ClearDefault(now);
             await unitOfWork.SaveChangesAsync(ct);
         }
-        var account = BankAccount.Register(command.UserId, details, number, isDefault, now);
+        var account = BankAccount.Register(
+            command.UserId,
+            details,
+            number,
+            isDefault,
+            now,
+            command.OwnerEmail
+        );
         accounts.Add(account);
         try
         {

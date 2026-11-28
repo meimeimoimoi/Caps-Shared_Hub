@@ -29,4 +29,15 @@ public sealed class BillingNotificationOutbox(BillingDbContext db) : IBillingNot
                 CreatedAt = now,
             }
         );
+
+    public void Enqueue(ExpertBankAccountRejectedEvent message, DateTimeOffset now) =>
+        db.NotificationOutbox.Add(
+            new NotificationOutboxEntry
+            {
+                Id = message.Id,
+                MessageType = nameof(ExpertBankAccountRejectedEvent),
+                Payload = JsonSerializer.Serialize(message),
+                CreatedAt = now,
+            }
+        );
 }

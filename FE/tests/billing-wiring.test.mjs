@@ -130,11 +130,37 @@ test('payouts send the status filter only when one is chosen', async () => {
       return { data: { items: [], total: 0 } }
     },
   })
-  await getPayouts(null, 1)
-  await getPayouts('PENDING', 2)
+  await getPayouts({ status: null }, 1)
+  await getPayouts(
+    {
+      status: 'PENDING',
+      recipientUserId: 'u1',
+      fromDay: '2026-11-01',
+      toDay: '2026-11-30',
+      minAmount: 100000,
+    },
+    2
+  )
+  const none = {
+    recipientUserId: undefined,
+    from: undefined,
+    to: undefined,
+    minAmount: undefined,
+    maxAmount: undefined,
+  }
   assert.deepEqual(params, [
-    { status: undefined, page: 1, pageSize: 20, sortDescending: true },
-    { status: 'PENDING', page: 2, pageSize: 20, sortDescending: false },
+    { status: undefined, page: 1, pageSize: 20, ...none },
+    {
+      status: 'PENDING',
+      page: 2,
+      pageSize: 20,
+      ...none,
+      recipientUserId: 'u1',
+      // Vietnam days: the "to" day is included up to its midnight
+      from: '2026-11-01T00:00:00+07:00',
+      to: '2026-12-01T00:00:00+07:00',
+      minAmount: 100000,
+    },
   ])
 })
 

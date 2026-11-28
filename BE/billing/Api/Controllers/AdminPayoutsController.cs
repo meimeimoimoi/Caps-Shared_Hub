@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Caps.Billing.Api.DTOs.Requests;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Application.Features.Payouts;
 using Caps.Common.Api;
@@ -20,6 +21,7 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
     /// status is matched case-insensitively (e.g. PENDING); page starts at 1, pageSize defaults to 20 and is at
     /// most 100. Bank details are the snapshot taken when the payout was created (last 4 digits only).
     /// sortBy accepts createdAt (default) or amount; sortDescending defaults to true. Sorting precedes paging.
+    /// sortBy accepts due (default: unsent first, oldest first), createdAt or amount; recipientUserId, from/to (created) and minAmount/maxAmount filter
     /// </remarks>
     /// <response code="200">The page with the total number of matching payouts.</response>
     /// <response code="400">Invalid input or INVALID_PAGING.</response>
@@ -34,14 +36,42 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery, MaxLength(32)] string? sortBy = null,
-        [FromQuery] bool sortDescending = true
+        [FromQuery] bool sortDescending = true,
+        [FromQuery] Guid? recipientUserId = null,
+        [FromQuery] DateTimeOffset? from = null,
+        [FromQuery] DateTimeOffset? to = null,
+        [FromQuery] long? minAmount = null,
+        [FromQuery] long? maxAmount = null
     )
     {
         var payouts = await handler.HandleAsync(
-            new(status, page, pageSize, sortBy, sortDescending),
+            new(
+                status,
+                page,
+                pageSize,
+                sortBy,
+                sortDescending,
+                recipientUserId,
+                from,
+                to,
+                minAmount,
+                maxAmount
+            ),
             ct
         );
         return Ok(ApiResponse<PayoutPageResponse>.Ok(payouts));
+    }
+
+    /// <summary>Unsent payouts by deadline stage and the PayOS payout balance, for the page banner.</summary>
+    /// <response code="200">The counts; balance is null when PayOS cannot be read.</response>
+    [HttpGet("summary")]
+    public async Task<IActionResult> Summary(
+        [FromServices] IQueryHandler<GetPayoutSummaryQuery, PayoutSummaryResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var summary = await handler.HandleAsync(new(), ct);
+        return Ok(ApiResponse<PayoutSummaryResponse>.Ok(summary));
     }
 
     /// <summary>Sends a PENDING or FAILED payout to the expert's bank account through PayOS (chi hộ).</summary>
@@ -87,6 +117,40 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
     )
     {
         var payout = await handler.HandleAsync(new(payoutId), ct);
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Holds an unsent payout for review: a reason (10+ characters) and a review deadline (1–30 days).</summary>
+    /// <response code="200">Held; it cannot be sent and its deadline waits.</response>
+    /// <response code="409">PAYOUT_NOT_TRANSFERABLE (being sent or paid).</response>
+    /// <response code="422">PAYOUT_HOLD_INVALID.</response>
+    [HttpPost("{payoutId:guid}/hold")]
+    public async Task<IActionResult> Hold(
+        Guid payoutId,
+        HoldPayoutRequest r,
+        [FromServices] ICommandHandler<HoldPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(
+            new(payoutId, UserId, false, r.Reason, r.ReviewDays),
+            ct
+        );
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Lifts a hold after review, with an optional note; the deadline restarts.</summary>
+    /// <response code="200">Released.</response>
+    /// <response code="409">PAYOUT_NOT_HELD.</response>
+    [HttpPost("{payoutId:guid}/release")]
+    public async Task<IActionResult> Release(
+        Guid payoutId,
+        ReleasePayoutRequest r,
+        [FromServices] ICommandHandler<HoldPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(new(payoutId, UserId, true, r.Note), ct);
         return Ok(ApiResponse<PayoutResponse>.Ok(payout));
     }
 }

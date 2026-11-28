@@ -47,6 +47,13 @@ public sealed class BillingNotificationPublisher(
                         var message = JsonSerializer.Deserialize<PayoutDigestEvent>(row.Payload)!;
                         await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
                     }
+                    else if (row.MessageType == nameof(ExpertBankAccountRejectedEvent))
+                    {
+                        var message = JsonSerializer.Deserialize<ExpertBankAccountRejectedEvent>(
+                            row.Payload
+                        )!;
+                        await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
                     row.SentAt = clock.GetUtcNow();
                     row.Payload = "";
                 }

@@ -11,6 +11,9 @@ public sealed class BankAccount
 
     public Guid Id { get; } = UuidV7.NewGuid();
     public Guid UserId { get; private set; }
+
+    /// <summary>The expert's sign-in email when they linked the account, for review notices; null if unknown.</summary>
+    public string? OwnerEmail { get; private set; }
     public string BankBin { get; private set; } = default!;
     public string BankName { get; private set; } = default!;
     public string AccountNumberEnc { get; private set; } = default!;
@@ -42,7 +45,8 @@ public sealed class BankAccount
         BankAccountDetails details,
         ProtectedAccountNumber number,
         bool isDefault,
-        DateTimeOffset now
+        DateTimeOffset now,
+        string? ownerEmail = null
     ) =>
         new()
         {
@@ -56,6 +60,7 @@ public sealed class BankAccount
             IsDefault = isDefault,
             CreatedAt = now,
             UpdatedAt = now,
+            OwnerEmail = ownerEmail,
         };
 
     public void MakeDefault(DateTimeOffset now)

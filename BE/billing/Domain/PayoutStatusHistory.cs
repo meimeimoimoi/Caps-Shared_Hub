@@ -22,16 +22,20 @@ public sealed class PayoutStatusHistory
     internal static PayoutStatusHistory Of(
         PayoutTransaction payout,
         Guid? actorUserId,
-        DateTimeOffset now
+        DateTimeOffset now,
+        string? eventName = null,
+        string? note = null
     ) =>
         new()
         {
             PayoutId = payout.Id,
-            Status = payout.Status,
+            Status = eventName ?? payout.Status,
             AttemptNo = payout.AttemptCount,
             AccountLast4 = payout.SnapAccountLast4,
             ActorUserId = actorUserId,
-            Note = payout.Status == PayoutStatus.Failed ? payout.LastError : payout.ProviderRef,
+            Note =
+                note
+                ?? (payout.Status == PayoutStatus.Failed ? payout.LastError : payout.ProviderRef),
             At = now,
         };
 }

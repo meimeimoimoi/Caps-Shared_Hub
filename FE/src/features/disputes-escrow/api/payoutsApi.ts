@@ -33,19 +33,26 @@ export interface Payout {
   completedAt: string | null
   /** Settlement + 7 calendar days: it cannot be sent earlier */
   transferableFrom: string
-  /** Staff must send it by then: 2 working days after the hold */
-  dueAt: string
+  /** Staff must send it by then: 2 working days after the hold or the account check, null without a verified account */
+  dueAt: string | null
   /** 1 working day before dueAt, when staff are reminded */
-  remindAt: string
+  remindAt: string | null
   /** Every allowed attempt failed; only another verified account of the expert is tried */
   attemptsExhausted: boolean
+  /** Why staff hold it for review; null when it is not held */
+  holdReason: string | null
+  /** Staff must review the hold by then */
+  holdReviewBy: string | null
+  /** What the transfer cost the platform once paid; the expert receives the full amount */
+  transferFee: number | null
   /** Status changes, oldest first; never edited */
   history: PayoutHistoryEntry[]
 }
 
 /** One payout status change; actorUserId is null when the system or PayOS made it */
 export interface PayoutHistoryEntry {
-  status: PayoutStatus
+  /** A status, or ON_HOLD / RELEASED when staff held or released it */
+  status: PayoutStatus | 'ON_HOLD' | 'RELEASED'
   attemptNo: number
   accountLast4: string | null
   actorUserId: string | null
@@ -61,9 +68,29 @@ export interface PayoutPage {
   total: number
 }
 
-/** Newest first; payouts still to send come oldest first, so the most overdue lead */
+/** Staff filters on the payout table; empty fields do not filter */
+export interface PayoutFilters {
+  status: string | null
+  recipientUserId?: string
+  /** Created on or after this day (YYYY-MM-DD, Vietnam time) */
+  fromDay?: string
+  /** Created on or before this day (YYYY-MM-DD, Vietnam time) */
+  toDay?: string
+  minAmount?: number
+  maxAmount?: number
+}
+
+// A Vietnam calendar day as the instant it starts
+const dayStart = (day: string) => `${day}T00:00:00+07:00`
+const nextDay = (day: string) => {
+  const d = new Date(`${day}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Unsent payouts first, the most urgent on top (the server sorts by deadline) */
 export async function getPayouts(
-  status: string | null,
+  filters: PayoutFilters,
   page: number,
   signal?: AbortSignal
 ): Promise<PayoutPage> {
@@ -72,11 +99,40 @@ export async function getPayouts(
     return { items: [], page, pageSize: PAYOUT_PAGE_SIZE, total: 0 }
   const res = await api.get<Envelope<PayoutPage>>(BASE, {
     params: {
-      status: status ?? undefined,
+      status: filters.status ?? undefined,
       page,
       pageSize: PAYOUT_PAGE_SIZE,
-      sortDescending: status !== 'PENDING' && status !== 'FAILED',
+      recipientUserId: filters.recipientUserId || undefined,
+      from: filters.fromDay ? dayStart(filters.fromDay) : undefined,
+      to: filters.toDay ? dayStart(nextDay(filters.toDay)) : undefined,
+      minAmount: filters.minAmount ?? undefined,
+      maxAmount: filters.maxAmount ?? undefined,
     },
+    signal,
+  })
+  return res.data
+}
+
+/** Unsent payouts by deadline stage and the PayOS payout balance (billing PayoutSummaryResponse) */
+export interface PayoutSummary {
+  summary: {
+    overdue: number
+    overdueAmount: number
+    dueSoon: number
+    ready: number
+    waitingForAccount: number
+    amountToSend: number
+    heldPastReview: number
+  }
+  /** Null when PayOS cannot be read */
+  balance: number | null
+}
+
+export async function getPayoutSummary(
+  signal?: AbortSignal
+): Promise<PayoutSummary | null> {
+  if (isExpertDemo) return null
+  const res = await api.get<Envelope<PayoutSummary>>(`${BASE}/summary`, {
     signal,
   })
   return res.data
@@ -89,6 +145,10 @@ type PayoutErrorKey =
   | 'payouts.errors.notFound'
   | 'payouts.errors.onHold'
   | 'payouts.errors.attemptsExhausted'
+  | 'payouts.errors.insufficientBalance'
+  | 'payouts.errors.held'
+  | 'payouts.errors.holdInvalid'
+  | 'payouts.errors.notHeld'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
 
@@ -100,14 +160,23 @@ const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_NOT_FOUND: 'payouts.errors.notFound',
   PAYOUT_ON_HOLD: 'payouts.errors.onHold',
   PAYOUT_ATTEMPTS_EXHAUSTED: 'payouts.errors.attemptsExhausted',
+  PAYOUT_INSUFFICIENT_BALANCE: 'payouts.errors.insufficientBalance',
+  PAYOUT_HELD: 'payouts.errors.held',
+  PAYOUT_HOLD_INVALID: 'payouts.errors.holdInvalid',
+  PAYOUT_NOT_HELD: 'payouts.errors.notHeld',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',
 }
 
-async function action(id: string, name: 'transfer' | 'refresh') {
+async function action(
+  id: string,
+  name: 'transfer' | 'refresh' | 'hold' | 'release',
+  body?: object
+) {
   try {
     const res = await api.post<Envelope<Payout>>(
-      `${BASE}/${encodeURIComponent(id)}/${name}`
+      `${BASE}/${encodeURIComponent(id)}/${name}`,
+      body
     )
     return res.data
   } catch (e) {
@@ -116,6 +185,14 @@ async function action(id: string, name: 'transfer' | 'refresh') {
     throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
   }
 }
+
+/** Holds an unsent payout for review: a reason (10+ characters) and a review within 1-30 days */
+export const holdPayout = (id: string, reason: string, reviewDays: number) =>
+  action(id, 'hold', { reason, reviewDays })
+
+/** Lifts a hold after review; the deadline restarts */
+export const releasePayout = (id: string, note: string) =>
+  action(id, 'release', { note: note || null })
 
 /** Sends a PENDING or FAILED payout to the expert's bank account through PayOS */
 export const transferPayout = (id: string) => action(id, 'transfer')

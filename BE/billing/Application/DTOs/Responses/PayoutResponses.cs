@@ -20,9 +20,12 @@ public sealed record PayoutResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt,
     DateTimeOffset TransferableFrom,
-    DateTimeOffset DueAt,
-    DateTimeOffset RemindAt,
+    DateTimeOffset? DueAt,
+    DateTimeOffset? RemindAt,
     bool AttemptsExhausted,
+    string? HoldReason,
+    DateTimeOffset? HoldReviewBy,
+    long? TransferFee,
     PayoutHistoryResponse[] History
 )
 {
@@ -46,6 +49,9 @@ public sealed record PayoutResponse(
             x.DueAt(calendar),
             x.RemindAt(calendar),
             x.AttemptsExhausted,
+            x.HoldReason,
+            x.HoldReviewBy,
+            x.TransferFee,
             [
                 .. x
                     .History.OrderBy(h => h.At)

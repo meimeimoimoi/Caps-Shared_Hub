@@ -24,7 +24,8 @@ public sealed class TransferPayoutHandler(
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     WorkCalendar calendar,
-    IBillingNotificationOutbox outbox
+    IBillingNotificationOutbox outbox,
+    PayoutFeePolicy fees
 ) : ICommandHandler<TransferPayoutCommand, PayoutResponse>
 {
     /// <summary>Shown on the expert's bank statement; plain ASCII, as banks may drop diacritics.</summary>
@@ -47,6 +48,11 @@ public sealed class TransferPayoutHandler(
                 ?? throw BillingErrors.PayoutNotFound();
             if (!payout.CanTransfer)
                 throw BillingErrors.PayoutNotTransferable();
+            // A shortfall is refused before any attempt is opened, so it never uses up a retry
+            if (await gateway.GetBalanceAsync(ct) is { } balance && balance < payout.Amount)
+            {
+                throw BillingErrors.PayoutInsufficientBalance(balance);
+            }
 
             var now = clock.GetUtcNow();
             var accounts = await bankAccounts.ListAsync(payout.RecipientUserId, ct);
@@ -81,7 +87,7 @@ public sealed class TransferPayoutHandler(
         );
         var after = clock.GetUtcNow();
         if (submission.Accepted is { } report)
-            payout.Apply(report.ProviderRef, report.Status, report.Error, after);
+            payout.Apply(report.ProviderRef, report.Status, report.Error, after, fees.PerTransfer);
         else
             payout.Fail(submission.Refusal ?? "REFUSED", after);
         PayoutNotices.Enqueue(outbox, payout, after);

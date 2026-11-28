@@ -122,6 +122,44 @@ public sealed class PayOsPayoutClient(
             : ReadReport(list[0], reference) ?? throw Unknown(reference, status, root);
     }
 
+    public async Task<long?> GetBalanceAsync(CancellationToken ct)
+    {
+        if (!IsAvailable)
+        {
+            return null;
+        }
+        try
+        {
+            using var message = Request(HttpMethod.Get, "v1/payouts-account/balance");
+            var (status, root) = await SendAsync(message, "balance", ct);
+            if (status >= HttpStatusCode.BadRequest || Code(root) != SuccessCode)
+            {
+                return null;
+            }
+            // The docs sample sends the balance as a string; a number is accepted too
+            return
+                root.TryGetProperty("data", out var data)
+                && data.ValueKind == JsonValueKind.Object
+                && data.TryGetProperty("balance", out var b)
+                ? b.ValueKind == JsonValueKind.Number
+                    ? b.GetInt64()
+                    : long.TryParse(
+                        b.GetString(),
+                        NumberStyles.Integer,
+                        CultureInfo.InvariantCulture,
+                        out var v
+                    )
+                        ? v
+                        : null
+                : null;
+        }
+        catch (AppException)
+        {
+            // SendAsync throws PAYMENT_UNVAILABLE when PayOs cannot be reached: the balance is unknow
+            return null;
+        }
+    }
+
     /// <summary>
     /// Maps a PayOS payout to a PayoutStatus: its single transaction's state, or a rejected approval. Null when it
     /// is malformed or belongs to another reference.

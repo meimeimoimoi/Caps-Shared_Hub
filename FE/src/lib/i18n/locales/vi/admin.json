@@ -1722,11 +1722,46 @@
     "retry": "Chuyển lại",
     "refresh": "Kiểm tra kết quả",
     "heldUntil": "Chuyển được từ {{date}}",
+    "fee": "Thực nhận đủ số tiền (không khấu trừ thuế); phí chuyển khoản {{fee}} do nền tảng chịu",
+    "hold": {
+      "open": "Tạm giữ",
+      "submit": "Xác nhận tạm giữ",
+      "release": "Bỏ tạm giữ",
+      "reason": "Lý do tạm giữ",
+      "reasonPlaceholder": "Lý do cụ thể, ít nhất 10 ký tự (chỉ nội bộ thấy)",
+      "note": "Ghi chú kết quả rà soát",
+      "notePlaceholder": "Kết quả rà soát (không bắt buộc)",
+      "reviewDays": "Rà soát trong (ngày)",
+      "label": "Đang tạm giữ, rà soát trước {{date}}: {{reason}}",
+      "held": "Đã tạm giữ lệnh chi; chuyên gia được báo khoản tiền đang được rà soát.",
+      "released": "Đã bỏ tạm giữ; hạn chót tính lại từ bây giờ.",
+      "historyHeld": "Tạm giữ",
+      "historyReleased": "Bỏ tạm giữ"
+    },
+    "filters": {
+      "expert": "Chuyên gia",
+      "from": "Từ ngày",
+      "to": "Đến ngày",
+      "minAmount": "Từ số tiền",
+      "maxAmount": "Đến số tiền"
+    },
+    "banner": {
+      "overdue": "{{count}} lệnh quá hạn chót ({{amount}})",
+      "dueSoon": "{{count}} lệnh sắp đến hạn chót",
+      "ready": "{{count}} lệnh sẵn sàng chuyển",
+      "waiting": "{{count}} lệnh chờ tài khoản quá 30 ngày",
+      "heldPastReview": "{{count}} lệnh tạm giữ quá hạn rà soát",
+      "clear": "Không có lệnh chi nào cần xử lý.",
+      "balance": "Số dư chi hộ payOS: {{balance}} (cần {{needed}} cho các lệnh đến hạn).",
+      "balanceShort": "Số dư chi hộ payOS {{balance}} không đủ, cần {{needed}}. Người phụ trách ngân quỹ cần nạp thêm.",
+      "balanceUnknown": "Chưa đọc được số dư chi hộ payOS."
+    },
     "stage": {
       "overdue": "Quá hạn chót {{date}}",
       "dueSoon": "Sắp đến hạn chót {{date}}",
       "ready": "Sẵn sàng chuyển, hạn chót {{date}}",
-      "holding": "Đang giữ 7 ngày, hạn chót {{date}}"
+      "holding": "Đang giữ 7 ngày",
+      "waitingAccount": "Chờ chuyên gia có tài khoản đã xác minh; hạn chót tính từ lúc xác minh"
     },
     "history": {
       "title": "Lịch sử ({{count}})",
@@ -1748,6 +1783,10 @@
       "noAccount": "Chuyên gia chưa có tài khoản ngân hàng để nhận tiền.",
       "notFound": "Không tìm thấy lệnh chi.",
       "onHold": "Lệnh chi còn trong thời gian giữ 7 ngày sau quyết toán, chưa được chuyển.",
+      "held": "Lệnh chi đang tạm giữ; bỏ tạm giữ trước khi chuyển.",
+      "holdInvalid": "Cần lý do ít nhất 10 ký tự và hạn rà soát từ 1 đến 30 ngày.",
+      "notHeld": "Lệnh chi không còn bị tạm giữ.",
+      "insufficientBalance": "Số dư chi hộ payOS không đủ cho lệnh này. Lệnh chưa bị tính là một lần chuyển; nạp thêm rồi chuyển lại.",
       "attemptsExhausted": "Lệnh chi đã hết lượt chuyển lại. Cần chuyên gia thêm tài khoản khác và được xác minh.",
       "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
       "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau.",

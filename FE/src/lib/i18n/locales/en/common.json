@@ -144,11 +144,14 @@
       "SUSPENDED": "{{service}} is suspended",
       "REINSTATED": "{{service}} has been reinstated"
     },
+    "bankAccountRejected": "Account {{account}} was not verified: {{reason}}. Please add another account in your name.",
     "payout": {
       "RECORDED": "Income of {{amount}} VND is recorded and can be sent to your verified account from {{date}}.",
       "SUCCEEDED": "Shared Hub sent {{amount}} VND to your bank account.",
       "FAILED": "Sending {{amount}} VND did not go through. Shared Hub will check and send it again.",
       "ACCOUNT_NEEDED": "Sending {{amount}} VND failed several times. Please add another bank account in your name.",
+      "HELD": "{{amount}} VND is under review by Shared Hub before it is sent. We will tell you once it is done.",
+      "RELEASED": "{{amount}} VND has been reviewed and will be sent to your verified account.",
       "ACCOUNT_MISSING": "{{amount}} VND is ready to send but you have no verified bank account. Please add one in your name."
     },
     "priceOutOfRange": "Your {{service}} price is outside the new {{min}}–{{max}} VND range, so it is hidden from the marketplace. Please reprice.",

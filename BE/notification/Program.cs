@@ -27,6 +27,7 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertPriceOutOfRangeConsumer>();
         x.AddConsumer<ExpertPayoutNoticeConsumer>();
         x.AddConsumer<PayoutDigestConsumer>();
+        x.AddConsumer<ExpertBankAccountRejectedConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
         x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
