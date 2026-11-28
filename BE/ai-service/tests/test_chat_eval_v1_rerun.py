@@ -127,6 +127,18 @@ class DraftCopiedNumbersTests(unittest.TestCase):
         self.assertIn("01000123456", mock_llm.invoke.call_args_list[1].args[0])
         self.assertFalse(result["has_unauthorized_numbers"])
 
+    def test_invalid_redraft_keeps_the_flagged_first_draft(self):
+        citations = [{"document_number": "141/2026/NĐ-CP", "article": "Điều 2"}]
+        with patch("app.modules.drafting.drafter.llm_model") as mock_llm:
+            mock_llm.invoke.side_effect = [
+                self._reply("Doanh nghiệp A, mã số thuế 01000123456."),
+                SimpleNamespace(content="not json"),
+            ]
+            result = DocumentDrafter.generate_draft(self.SNAPSHOT, self.TEMPLATE, self.LAW, citations=citations)
+        self.assertEqual(mock_llm.invoke.call_count, 2)
+        self.assertTrue(result["has_unauthorized_numbers"])
+        self.assertIn("01000123456", result["unauthorized_numbers"])
+
 
 if __name__ == "__main__":
     unittest.main()

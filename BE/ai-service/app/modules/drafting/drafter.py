@@ -3,6 +3,8 @@ import json
 import logging
 from typing import Any
 
+from fastapi import HTTPException
+
 from app.core.ai_response import parse_ai_response
 from app.core.cit_math import parse_numeric_scalar
 from app.core.models import llm_model
@@ -246,7 +248,14 @@ class DocumentDrafter:
                 retry_note=retry_note,
             )
             res = llm_model.invoke(prompt)
-            raw_draft_content = parse_ai_response(res.content, DraftContent).root
+            try:
+                raw_draft_content = parse_ai_response(res.content, DraftContent).root
+            except HTTPException:
+                if attempt == 0:
+                    raise
+                # An invalid redraft must not fail the request; the first draft keeps its flags (SH-03 rerun 502).
+                logger.info("Redraft was not valid JSON; keeping the first draft")
+                break
 
             draft_content, tax_issues = _enrich_draft_content(
                 draft_content=raw_draft_content,
