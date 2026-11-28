@@ -39,13 +39,20 @@ export interface Payout {
   remindAt: string | null
   /** Every allowed attempt failed; only another verified account of the expert is tried */
   attemptsExhausted: boolean
+  /** Why staff hold it for review; null when it is not held */
+  holdReason: string | null
+  /** Staff must review the hold by then */
+  holdReviewBy: string | null
+  /** What the transfer cost the platform once paid; the expert receives the full amount */
+  transferFee: number | null
   /** Status changes, oldest first; never edited */
   history: PayoutHistoryEntry[]
 }
 
 /** One payout status change; actorUserId is null when the system or PayOS made it */
 export interface PayoutHistoryEntry {
-  status: PayoutStatus
+  /** A status, or ON_HOLD / RELEASED when staff held or released it */
+  status: PayoutStatus | 'ON_HOLD' | 'RELEASED'
   attemptNo: number
   accountLast4: string | null
   actorUserId: string | null
@@ -115,6 +122,7 @@ export interface PayoutSummary {
     ready: number
     waitingForAccount: number
     amountToSend: number
+    heldPastReview: number
   }
   /** Null when PayOS cannot be read */
   balance: number | null
@@ -138,6 +146,9 @@ type PayoutErrorKey =
   | 'payouts.errors.onHold'
   | 'payouts.errors.attemptsExhausted'
   | 'payouts.errors.insufficientBalance'
+  | 'payouts.errors.held'
+  | 'payouts.errors.holdInvalid'
+  | 'payouts.errors.notHeld'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
 
@@ -150,14 +161,22 @@ const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_ON_HOLD: 'payouts.errors.onHold',
   PAYOUT_ATTEMPTS_EXHAUSTED: 'payouts.errors.attemptsExhausted',
   PAYOUT_INSUFFICIENT_BALANCE: 'payouts.errors.insufficientBalance',
+  PAYOUT_HELD: 'payouts.errors.held',
+  PAYOUT_HOLD_INVALID: 'payouts.errors.holdInvalid',
+  PAYOUT_NOT_HELD: 'payouts.errors.notHeld',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',
 }
 
-async function action(id: string, name: 'transfer' | 'refresh') {
+async function action(
+  id: string,
+  name: 'transfer' | 'refresh' | 'hold' | 'release',
+  body?: object
+) {
   try {
     const res = await api.post<Envelope<Payout>>(
-      `${BASE}/${encodeURIComponent(id)}/${name}`
+      `${BASE}/${encodeURIComponent(id)}/${name}`,
+      body
     )
     return res.data
   } catch (e) {
@@ -166,6 +185,14 @@ async function action(id: string, name: 'transfer' | 'refresh') {
     throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
   }
 }
+
+/** Holds an unsent payout for review: a reason (10+ characters) and a review within 1-30 days */
+export const holdPayout = (id: string, reason: string, reviewDays: number) =>
+  action(id, 'hold', { reason, reviewDays })
+
+/** Lifts a hold after review; the deadline restarts */
+export const releasePayout = (id: string, note: string) =>
+  action(id, 'release', { note: note || null })
 
 /** Sends a PENDING or FAILED payout to the expert's bank account through PayOS */
 export const transferPayout = (id: string) => action(id, 'transfer')

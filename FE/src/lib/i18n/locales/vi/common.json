@@ -150,6 +150,8 @@
       "SUCCEEDED": "Shared Hub đã chuyển {{amount}} đ vào tài khoản ngân hàng của bạn.",
       "FAILED": "Chuyển {{amount}} đ chưa thành công. Shared Hub sẽ kiểm tra và chuyển lại.",
       "ACCOUNT_NEEDED": "Chuyển {{amount}} đ không thành công nhiều lần. Hãy thêm tài khoản ngân hàng khác đứng tên bạn.",
+      "HELD": "Khoản {{amount}} đ đang được Shared Hub rà soát trước khi chuyển. Chúng tôi sẽ báo khi rà soát xong.",
+      "RELEASED": "Khoản {{amount}} đ đã rà soát xong và sẽ được chuyển vào tài khoản đã xác minh của bạn.",
       "ACCOUNT_MISSING": "Khoản {{amount}} đ đã chuyển được nhưng bạn chưa có tài khoản ngân hàng đã xác minh. Hãy thêm tài khoản đứng tên bạn."
     },
     "priceOutOfRange": "Giá dịch vụ {{service}} nằm ngoài khoảng mới {{min}}–{{max}} đ nên đang bị ẩn khỏi sàn. Hãy chỉnh giá.",

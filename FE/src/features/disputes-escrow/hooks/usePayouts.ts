@@ -8,7 +8,9 @@ import { getExpertNames } from '../api/bankReviewApi'
 import {
   getPayouts,
   getPayoutSummary,
+  holdPayout,
   refreshPayout,
+  releasePayout,
   transferPayout,
   type PayoutFilters,
 } from '../api/payoutsApi'
@@ -51,5 +53,8 @@ export function usePayouts() {
     setPage,
     transfer: (id: string) => reload(transferPayout(id)),
     refresh: (id: string) => reload(refreshPayout(id)),
+    hold: (id: string, reason: string, days: number) =>
+      reload(holdPayout(id, reason, days)),
+    release: (id: string, note: string) => reload(releasePayout(id, note)),
   }
 }

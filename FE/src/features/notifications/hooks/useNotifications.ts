@@ -110,6 +110,8 @@ export function useNotifications() {
     FAILED: 'notifications.payout.FAILED',
     ACCOUNT_NEEDED: 'notifications.payout.ACCOUNT_NEEDED',
     ACCOUNT_MISSING: 'notifications.payout.ACCOUNT_MISSING',
+    HELD: 'notifications.payout.HELD',
+    RELEASED: 'notifications.payout.RELEASED',
   } as const
 
   const accessItem = (n: AppNotification): ShellNotification | null => {
