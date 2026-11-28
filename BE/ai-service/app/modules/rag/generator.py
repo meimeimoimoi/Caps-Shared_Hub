@@ -23,6 +23,7 @@ from app.modules.rag.guardrails import (
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
     mismatched_bracket_rate,
+    missing_correct_rate,
     mismatched_reduction_eligibility,
     missing_verified_tax_note,
 )
@@ -346,6 +347,16 @@ class GroundedGenerator:
                 logger.info("Chat answer dropped eligibility condition (attempt %d)", attempt + 1)
                 retry_note = condition_note
                 continue
+
+            if completion := missing_correct_rate(question, conclusion_text, used_chunks):
+                # TS-11: a bare "Sai" is completed with the rate sentence quoted from the cited chunk.
+                index, sentence = completion
+                logger.info("Chat answer denied the premise without the correct rate; appending it")
+                addition = f" {sentence} [{used_indexes[index]}]"
+                if answer.plain_text is not None:
+                    answer.plain_text += addition
+                else:
+                    answer.conclusion += addition
 
             mapping = {old: new for new, old in enumerate(used_indexes, start=1)}
             answer.conclusion = _renumber_markers(answer.conclusion, mapping)

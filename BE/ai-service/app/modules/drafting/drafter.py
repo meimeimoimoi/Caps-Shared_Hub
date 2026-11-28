@@ -33,6 +33,8 @@ from app.modules.drafting.validators import (
     find_unauthorized_draft_numbers,
     instruction_in_snapshot_issue,
     is_instruction_text,
+    off_topic_expense,
+    off_topic_expense_issue,
     strip_instruction_values,
 )
 from app.schemas.ai_results import DraftContent
@@ -239,6 +241,7 @@ class DocumentDrafter:
         )
 
         retry_note: str | None = None
+        off_topic: str | None = None
         for attempt in range(2):
             prompt = build_draft_prompt(
                 snapshot_data=snapshot_data,
@@ -273,18 +276,30 @@ class DocumentDrafter:
                 legal_context=legal_context,
                 retrieved_hits=retrieved_hits,
             )
-            if not unauthorized or attempt == 1:
+            off_topic = off_topic_expense(draft_content, snapshot_data)
+            if (not unauthorized and not off_topic) or attempt == 1:
                 break
-            # SH-01/SH-03: the model copied a sample tax code and revenue from an example in the law text.
-            logger.info("Draft has numbers outside the snapshot %s; drafting again", unauthorized)
-            # Numbers from injected snapshot instructions never reach the prompt (SH-05).
-            raw_text = json.dumps(raw_snapshot, ensure_ascii=False)
-            listed = [num for num in unauthorized if num not in raw_text]
-            retry_note = (
-                "bản nháp trước có số liệu không có trong Input Snapshot"
-                + (": " + ", ".join(listed) if listed else "")
-                + ". Bỏ các số này; tên, mã số thuế và số liệu của doanh nghiệp chỉ lấy từ Input Snapshot."
-            )
+            notes: list[str] = []
+            if unauthorized:
+                # SH-01/SH-03: the model copied a sample tax code and revenue from an example in the law text.
+                logger.info("Draft has numbers outside the snapshot %s; drafting again", unauthorized)
+                # Numbers from injected snapshot instructions never reach the prompt (SH-05).
+                raw_text = json.dumps(raw_snapshot, ensure_ascii=False)
+                listed = [num for num in unauthorized if num not in raw_text]
+                notes.append(
+                    "bản nháp trước có số liệu không có trong Input Snapshot"
+                    + (": " + ", ".join(listed) if listed else "")
+                    + ". Bỏ các số này; tên, mã số thuế và số liệu của doanh nghiệp chỉ lấy từ Input Snapshot."
+                )
+            if off_topic:
+                # SH-01: a draft about a late-filing fine explained the 30% reduction instead.
+                logger.info("Draft does not explain the snapshot expense; drafting again")
+                notes.append(
+                    f"bản nháp trước không giải trình khoản chi trong Input Snapshot: '{off_topic}'. "
+                    "Nội dung giải trình và căn cứ pháp lý phải nói đúng về khoản chi này, "
+                    "chỉ dùng đoạn luật quy định về khoản chi đó."
+                )
+            retry_note = " ".join(notes)
         law_text = " ".join(
             [legal_context or ""]
             + [str((getattr(hit, "payload", None) or {}).get("text_content") or "") for hit in retrieved_hits or []]
@@ -299,6 +314,7 @@ class DocumentDrafter:
         for extra in (
             find_missing_tax_rate(draft_content, derived_tax_info or None),
             instruction_in_snapshot_issue(raw_snapshot),
+            off_topic_expense_issue(off_topic) if off_topic else None,
         ):
             if extra is not None:
                 check_issues.append(extra)

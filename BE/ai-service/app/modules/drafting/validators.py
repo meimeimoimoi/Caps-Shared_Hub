@@ -12,6 +12,7 @@ from app.core.cit_math import (
 )
 from app.core.legal_refs import LEGAL_REF_RE, extract_document_numbers
 from app.modules.drafting.tax_calculator import (
+    canonical_key,
     extract_template_fields,
     is_legal_basis_field,
     is_non_empty_value,
@@ -195,6 +196,53 @@ def find_missing_tax_rate(draft_content: dict[str, Any], derived_tax_info: dict[
             f"Bản nháp chưa nêu thuế suất {rate_text}% và điều khoản thuế suất tương ứng với doanh thu "
             "trong dữ liệu đầu vào."
         ),
+    )
+
+
+_EXPENSE_DESCRIPTION_KEYS = {"expensedescription", "motachiphi", "noidungchiphi", "khoanchi"}
+# Words every CIT draft repeats, so they do not show that the draft is about this expense.
+_GENERIC_EXPENSE_WORDS = {
+    "tiền", "chi", "phí", "khoản", "thuế", "năm", "quý", "tháng", "các", "của", "và", "cho", "theo", "về",
+    "được", "không", "doanh", "nghiệp", "thu", "nhập", "tndn",
+}
+
+
+def off_topic_expense(draft_content: dict[str, Any], snapshot_data: Any) -> str | None:
+    """Return the snapshot expense when the drafted text never talks about it (SH-01 wrote about the 30% reduction).
+
+    Fields echoed from the snapshot are skipped, so only the text the model wrote is checked.
+    """
+    if not isinstance(snapshot_data, dict):
+        return None
+    description = next(
+        (
+            str(val).strip()
+            for key, val in snapshot_data.items()
+            if canonical_key(key) in _EXPENSE_DESCRIPTION_KEYS and isinstance(val, str) and val.strip()
+        ),
+        None,
+    )
+    if not description:
+        return None
+    keywords = {w for w in re.findall(r"[^\W\d_]+", description.lower()) if w not in _GENERIC_EXPENSE_WORDS}
+    if not keywords:
+        return None
+    written = " ".join(
+        str(val).lower() for key, val in draft_content.items() if isinstance(val, str) and key not in snapshot_data
+    )
+    if not written.strip():
+        # Nothing was drafted (SH-04 is refused before drafting); other checks report missing content.
+        return None
+    found = {w for w in keywords if re.search(rf"(?<!\w){re.escape(w)}(?!\w)", written)}
+    return description if len(found) * 2 < len(keywords) else None
+
+
+def off_topic_expense_issue(description: str) -> DraftIssueItem:
+    return DraftIssueItem(
+        code="OFF_TOPIC_EXPENSE",
+        type="GROUNDING_ISSUE",
+        severity=DraftIssueSeverity.BLOCKING,
+        description=f"Nội dung bản nháp không giải trình đúng khoản chi trong dữ liệu đầu vào: '{description}'.",
     )
 
 

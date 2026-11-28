@@ -218,6 +218,36 @@ def mismatched_bracket_rate(
     )
 
 
+_CLAUSE_NUMBER_RE = re.compile(r"^\s*(?:\d+\.|[a-zđ]\))\s*", re.IGNORECASE)
+
+
+def missing_correct_rate(question: str, conclusion: str, used_chunks: list) -> tuple[int, str] | None:
+    """Return (index into used_chunks, rate sentence) when "Sai" omits the correct bracket rate.
+
+    TS-11 "doanh thu 5 tỷ được áp thuế suất 15% đúng không?" was answered just "Sai [1] [2]". The sentence is
+    quoted from a cited chunk, so the caller can append it without another model call.
+    """
+    body = CITATION_MARKER_RE.sub(" ", conclusion or "")
+    if not _YES_NO_QUESTION_RE.search(question or "") or not _DENIES_PREMISE_RE.search(body):
+        return None
+    expected = _expected_rate(question, _chunks_text(used_chunks))
+    if expected is None:
+        return None
+    asked = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(question or "")}
+    stated = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(body)}
+    if not asked or expected in asked or expected in stated:
+        return None
+    rate = f"{expected:g}%"
+    for index, hit in enumerate(used_chunks):
+        text = str((hit.payload or {}).get("text_content") or "")
+        for line in text.splitlines():
+            for sentence in re.split(r"(?<=\.)\s+", line):
+                if "thuế suất" in sentence.lower() and re.search(rf"(?<![\d.,]){re.escape(rate)}", sentence):
+                    sentence = _CLAUSE_NUMBER_RE.sub("", sentence).strip()
+                    return index, sentence if sentence.endswith(".") else sentence + "."
+    return None
+
+
 def mismatched_reduction_eligibility(question: str, conclusion: str, retrieved_chunks: list) -> str | None:
     """Return a retry note when the 30% reduction is granted or denied against the revenue limit in the law (MG-07)."""
     law_text = _chunks_text(retrieved_chunks)

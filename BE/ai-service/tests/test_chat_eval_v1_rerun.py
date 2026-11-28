@@ -21,8 +21,10 @@ from app.modules.rag.guardrails import (  # noqa: E402
     figures_in_text,
     find_ungrounded_numbers,
     mismatched_bracket_rate,
+    missing_correct_rate,
     missing_verified_tax_note,
 )
+from app.modules.drafting.validators import off_topic_expense  # noqa: E402
 from app.schemas.statuses import AnswerStatus  # noqa: E402
 
 CASH = (
@@ -211,6 +213,75 @@ class DraftCopiedNumbersTests(unittest.TestCase):
         self.assertEqual(mock_llm.invoke.call_count, 2)
         self.assertTrue(result["has_unauthorized_numbers"])
         self.assertIn("01000123456", result["unauthorized_numbers"])
+
+
+class DraftOffTopicTests(unittest.TestCase):
+    """SH-01: a draft about a late-filing fine explained the 30% reduction instead."""
+
+    SNAPSHOT = {
+        "companyName": "Công ty B",
+        "expenseDescription": "Tiền phạt chậm nộp tờ khai thuế GTGT quý 2 năm 2026",
+    }
+    TEMPLATE = [{"id": "noi_dung_giai_trinh", "label": "Nội dung", "required": True}]
+    LAW = "Luật 67/2025/QH15, Điều 9: khoản tiền phạt do vi phạm hành chính không được trừ khi xác định thu nhập chịu thuế."
+    CITATIONS = [{"document_number": "67/2025/QH15", "article": "Điều 9"}]
+    OFF_TOPIC = "Doanh nghiệp được giảm 30% số thuế thu nhập doanh nghiệp phải nộp."
+    ON_TOPIC = "Khoản tiền phạt chậm nộp tờ khai thuế GTGT là tiền phạt vi phạm hành chính, không được trừ."
+
+    def _reply(self, text: str):
+        return SimpleNamespace(content=json.dumps({"noi_dung_giai_trinh": text}, ensure_ascii=False))
+
+    def test_echoed_snapshot_field_does_not_count_as_on_topic(self):
+        draft = {"noi_dung_giai_trinh": self.OFF_TOPIC, **self.SNAPSHOT}
+        self.assertEqual(off_topic_expense(draft, self.SNAPSHOT), self.SNAPSHOT["expenseDescription"])
+        self.assertIsNone(off_topic_expense({"noi_dung_giai_trinh": self.ON_TOPIC}, self.SNAPSHOT))
+
+    def test_off_topic_draft_is_drafted_again(self):
+        with patch("app.modules.drafting.drafter.llm_model") as mock_llm:
+            mock_llm.invoke.side_effect = [self._reply(self.OFF_TOPIC), self._reply(self.ON_TOPIC)]
+            result = DocumentDrafter.generate_draft(self.SNAPSHOT, self.TEMPLATE, self.LAW, citations=self.CITATIONS)
+        self.assertEqual(mock_llm.invoke.call_count, 2)
+        self.assertIn("Tiền phạt chậm nộp", mock_llm.invoke.call_args_list[1].args[0])
+        self.assertNotIn("OFF_TOPIC_EXPENSE", [i.code for i in result["issues"]])
+
+    def test_draft_still_off_topic_is_flagged(self):
+        with patch("app.modules.drafting.drafter.llm_model") as mock_llm:
+            mock_llm.invoke.side_effect = [self._reply(self.OFF_TOPIC), self._reply(self.OFF_TOPIC)]
+            result = DocumentDrafter.generate_draft(self.SNAPSHOT, self.TEMPLATE, self.LAW, citations=self.CITATIONS)
+        self.assertIn("OFF_TOPIC_EXPENSE", [i.code for i in result["issues"]])
+        self.assertTrue(result["has_grounding_issues"])
+
+
+class BareDenialRateTests(unittest.TestCase):
+    """TS-11: "doanh thu 5 tỷ được áp thuế suất 15% đúng không?" was answered just "Sai [1] [2]"."""
+
+    QUESTION = "Doanh nghiệp doanh thu năm 5 tỷ được áp thuế suất 15% đúng không?"
+    CLAUSE = (
+        "Luật 67/2025/QH15 — Điều 10. Thuế suất — Khoản 3\n"
+        "3. Thuế suất 17% áp dụng đối với doanh nghiệp có tổng doanh thu năm từ trên 03 tỷ đồng đến không quá 50 tỷ đồng.\n"
+        "Doanh thu làm căn cứ xác định doanh nghiệp thuộc đối tượng được áp dụng thuế suất 15% và 17% là tổng doanh thu."
+    )
+
+    def test_rate_sentence_is_quoted_from_the_cited_clause(self):
+        index, sentence = missing_correct_rate(self.QUESTION, "Sai [1]", [_hit(self.CLAUSE)])
+        self.assertEqual(index, 0)
+        self.assertTrue(sentence.startswith("Thuế suất 17% áp dụng"))
+        self.assertIn("03 tỷ", sentence)
+
+    def test_denial_that_states_the_rate_is_left_alone(self):
+        self.assertIsNone(missing_correct_rate(self.QUESTION, "Sai, áp dụng 17% [1]", [_hit(self.CLAUSE)]))
+        self.assertIsNone(missing_correct_rate(self.QUESTION, "Đúng [1]", [_hit(self.CLAUSE)]))
+
+    def test_bare_denial_is_completed_end_to_end(self):
+        reply = {"answerable": True, "used_sources": [1], "conclusion": "Sai [1]"}
+        with patch("app.modules.rag.generator.llm_model") as mock_llm:
+            mock_llm.invoke.side_effect = [SimpleNamespace(content=json.dumps(reply, ensure_ascii=False))]
+            result = GroundedGenerator.generate_answer(
+                self.QUESTION, [_full_hit(self.CLAUSE, "67/2025/QH15")], "2026-01-01 đến 2026-12-31"
+            )
+        self.assertEqual(mock_llm.invoke.call_count, 1)
+        self.assertEqual(result["answer_status"], AnswerStatus.ANSWERED)
+        self.assertIn("Thuế suất 17% áp dụng", result["answer"])
 
 
 if __name__ == "__main__":
