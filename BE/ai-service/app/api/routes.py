@@ -61,6 +61,13 @@ def _validate_draft_period(period_start: str, period_end: str) -> tuple[str, str
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="period_start must be on or before period_end.",
         )
+    supported = {y.strip() for y in settings.DRAFT_SUPPORTED_TAX_YEARS.split(",") if y.strip()}
+    if supported and not {str(start_date.year), str(end_date.year)} <= supported:
+        # Workflow already limits drafts to the template's tax year; a direct call must not bypass it (SH-04).
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"No drafting template for tax period {start_date.year}; supported years: {', '.join(sorted(supported))}.",
+        )
     return start_date.isoformat(), end_date.isoformat()
 
 

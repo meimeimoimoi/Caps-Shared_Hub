@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     RAG_RERANKER_ENABLED: bool = True
     RAG_RERANKER_MODEL: str = "AITeamVN/Vietnamese_Reranker"
     RAG_RERANKER_DEVICE: str = "auto"
+    # Comma-separated tax years that have a drafting template; empty allows any year (SH-04).
+    DRAFT_SUPPORTED_TAX_YEARS: str = "2026"
     CHAT_MAX_QUESTION_CHARS: int = 6000
     REQUIRE_INTERNAL_API_KEY: bool = False
     INTERNAL_API_KEY: str = ""

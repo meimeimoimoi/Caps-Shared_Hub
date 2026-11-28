@@ -8,6 +8,8 @@ from app.core.models import llm_model
 from app.modules.drafting.prompts import NO_APPROVED_LEGAL_BASIS_NOTE, build_draft_prompt
 from app.modules.drafting.tax_calculator import (
     ASSESSABLE_INCOME_KEYS,
+    EXPENSE_AMOUNT_KEYS,
+    PROFIT_BEFORE_TAX_KEYS,
     REVENUE_KEYS,
     TAX_AMOUNT_KEYS,
     TAX_RATE_KEYS,
@@ -23,7 +25,12 @@ from app.modules.drafting.tax_calculator import (
 )
 from app.modules.drafting.validators import (
     evaluate_draft_issues,
+    find_input_contradictions,
+    find_missing_tax_rate,
     find_unauthorized_draft_numbers,
+    instruction_in_snapshot_issue,
+    is_instruction_text,
+    strip_instruction_values,
 )
 from app.schemas.ai_results import DraftContent
 from app.schemas.drafting_dto import DraftIssueItem, DraftIssueSeverity
@@ -42,7 +49,9 @@ def build_draft_retrieval_query(snapshot_data: dict, template_schema: Any) -> st
     parts: list[str] = [
         "Quy định pháp luật thuế thu nhập doanh nghiệp TNDN thuế suất phương pháp tính thuế thu nhập tính thuế doanh thu chi phí được trừ quyết toán thuế"
     ]
-    tax_focus_keys = TAX_AMOUNT_KEYS | TAX_RATE_KEYS | TAXABLE_INCOME_KEYS | ASSESSABLE_INCOME_KEYS
+    tax_focus_keys = (
+        TAX_AMOUNT_KEYS | TAX_RATE_KEYS | TAXABLE_INCOME_KEYS | ASSESSABLE_INCOME_KEYS | PROFIT_BEFORE_TAX_KEYS
+    )
     needs_tax_rate_focus = False
 
     for field in extract_template_fields(template_schema):
@@ -59,7 +68,7 @@ def build_draft_retrieval_query(snapshot_data: dict, template_schema: Any) -> st
                 needs_tax_rate_focus = True
             if isinstance(val, str):
                 cleaned = val.strip()
-                if cleaned and not cleaned.isdigit() and not any(
+                if cleaned and not cleaned.isdigit() and not is_instruction_text(cleaned) and not any(
                     m in cleaned.lower() for m in _INJECTION_QUERY_MARKERS
                 ):
                     parts.append(cleaned)
@@ -174,7 +183,14 @@ def _enrich_draft_content(
 ) -> tuple[dict[str, Any], list[DraftIssueItem]]:
     """Backfill missing required fields, enforce verified tax amounts, and synthesize narrative when ungrounded."""
     enriched = dict(draft_content)
-    snapshot = snapshot_data if isinstance(snapshot_data, dict) else {}
+    raw_snapshot = snapshot_data if isinstance(snapshot_data, dict) else {}
+    snapshot = strip_instruction_values(raw_snapshot)
+    for key, val in raw_snapshot.items():
+        if key not in snapshot:
+            enriched.pop(key, None)
+        elif key in enriched and not isinstance(val, (dict, list)) and enriched[key] != val:
+            # Identity and figure fields echo the snapshot; the model must not rewrite them (taxCode in SH-05).
+            enriched[key] = val
     tax_issues = _reconcile_tax_amount_fields(enriched, snapshot, template_schema, derived_tax_info)
 
     for field in extract_template_fields(template_schema):
@@ -207,6 +223,9 @@ class DocumentDrafter:
         retrieved_hits: list | None = None,
     ) -> dict:
         resolved_citations = citations or []
+        raw_snapshot = snapshot_data if isinstance(snapshot_data, dict) else {}
+        # The model never sees snapshot values that carry injected instructions (SH-05).
+        snapshot_data = strip_instruction_values(raw_snapshot)
         has_legal_basis = bool(legal_context and legal_context.strip()) and len(resolved_citations) > 0
         derived_tax_info = (
             derive_cit_calculation(snapshot_data, legal_context, retrieved_hits)
@@ -225,7 +244,7 @@ class DocumentDrafter:
 
         draft_content, tax_issues = _enrich_draft_content(
             draft_content=raw_draft_content,
-            snapshot_data=snapshot_data,
+            snapshot_data=raw_snapshot,
             template_schema=template_schema,
             has_legal_basis=has_legal_basis,
             derived_tax_info=derived_tax_info or None,
@@ -239,7 +258,24 @@ class DocumentDrafter:
             legal_context=legal_context,
             retrieved_hits=retrieved_hits,
         )
-        issues = tax_issues + evaluate_draft_issues(
+        law_text = " ".join(
+            [legal_context or ""]
+            + [str((getattr(hit, "payload", None) or {}).get("text_content") or "") for hit in retrieved_hits or []]
+        )
+        check_issues = find_input_contradictions(
+            draft_content,
+            snapshot_data,
+            revenue_vnd=lookup_numeric_by_keys(snapshot_data, REVENUE_KEYS),
+            expense_vnd=lookup_numeric_by_keys(snapshot_data, EXPENSE_AMOUNT_KEYS),
+            law_text=law_text,
+        )
+        for extra in (
+            find_missing_tax_rate(draft_content, derived_tax_info or None),
+            instruction_in_snapshot_issue(raw_snapshot),
+        ):
+            if extra is not None:
+                check_issues.append(extra)
+        issues = tax_issues + check_issues + evaluate_draft_issues(
             template_schema=template_schema,
             legal_context=legal_context,
             draft_content=draft_content,

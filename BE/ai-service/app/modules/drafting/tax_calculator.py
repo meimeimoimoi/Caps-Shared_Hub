@@ -3,7 +3,13 @@ from typing import Any
 
 from app.core.cit_math import parse_numeric_scalar, resolve_statutory_cit_rate
 
-REVENUE_KEYS = {"revenue", "totalrevenue", "doanhthu", "tongdoanhthu"}
+REVENUE_KEYS = {"revenue", "totalrevenue", "annualrevenue", "doanhthu", "tongdoanhthu", "doanhthunam"}
+# 03/TNDN indicator A1 is accounting profit before CIT; taxable income adds back non-deductible expenses.
+PROFIT_BEFORE_TAX_KEYS = {
+    "a1", "profitbeforetax", "accountingprofit", "loinhuantruocthue", "loinhuanketoantruocthue",
+}
+NON_DEDUCTIBLE_KEYS = {"nondeductible", "nondeductibleexpenses", "chiphikhongduoctru"}
+EXPENSE_AMOUNT_KEYS = {"amount", "expenseamount", "sotien", "sotienchi"}
 EXPENSE_KEYS = {
     "deductibleexpenses", "deductibleexpense", "expenses",
     "totalexpenses", "chiphiduoctru", "tongchiphi",
@@ -13,7 +19,7 @@ TAXABLE_INCOME_KEYS = {"taxableincome", "thunhaptinhthue"}
 EXEMPT_INCOME_KEYS = {"exemptincome", "thunhapmienthue"}
 LOSS_KEYS = {
     "losscarryover", "carriedforwardloss", "priorloss",
-    "priorperiodloss", "loketchuyen", "chuyenlo", "lonamtruoc",
+    "priorperiodloss", "loketchuyen", "chuyenlo", "lonamtruoc", "losscarried", "losscarriedforward",
 }
 TAX_RATE_KEYS = {"taxrate", "citrate", "thuesuat", "thuesuattndn"}
 TAX_AMOUNT_KEYS = {
@@ -97,7 +103,7 @@ def lookup_numeric_by_keys(snapshot: dict[str, Any], target_keys: set[str]) -> f
 
 
 def draft_involves_tax_rate(snapshot_data: dict, template_schema: Any) -> bool:
-    target_keys = TAX_AMOUNT_KEYS | TAX_RATE_KEYS | TAXABLE_INCOME_KEYS | ASSESSABLE_INCOME_KEYS
+    target_keys = TAX_AMOUNT_KEYS | TAX_RATE_KEYS | TAXABLE_INCOME_KEYS | ASSESSABLE_INCOME_KEYS | PROFIT_BEFORE_TAX_KEYS
     if any(
         canonical_key(f.get("id") or f.get("name") or f.get("key")) in target_keys
         for f in extract_template_fields(template_schema)
@@ -123,12 +129,16 @@ def derive_cit_calculation(
     assessable_income = lookup_numeric_by_keys(snapshot_data, ASSESSABLE_INCOME_KEYS)
     revenue = lookup_numeric_by_keys(snapshot_data, REVENUE_KEYS)
     expenses = lookup_numeric_by_keys(snapshot_data, EXPENSE_KEYS)
+    profit_before_tax = lookup_numeric_by_keys(snapshot_data, PROFIT_BEFORE_TAX_KEYS)
+    non_deductible = lookup_numeric_by_keys(snapshot_data, NON_DEDUCTIBLE_KEYS) or 0.0
 
     net_taxable: float | None = None
     if taxable_income is not None:
         net_taxable = max(taxable_income - loss_carryover, 0.0)
     elif assessable_income is not None:
         net_taxable = max(assessable_income - exempt_income - loss_carryover, 0.0)
+    elif profit_before_tax is not None:
+        net_taxable = max(profit_before_tax + non_deductible - exempt_income - loss_carryover, 0.0)
     elif revenue is not None and expenses is not None:
         net_taxable = max(revenue - expenses - exempt_income - loss_carryover, 0.0)
 

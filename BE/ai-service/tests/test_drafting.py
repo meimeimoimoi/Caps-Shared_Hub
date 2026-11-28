@@ -383,7 +383,7 @@ class DraftingGroundingTests(unittest.TestCase):
                     "revenue": 60_000_000_000,
                     "taxable_income": 1_000_000_000,
                     "tax_amount": 1_000_000_000,
-                    "can_cu_phap_ly": "Theo Điều 11 Nghị định 320/2025/ND-CP.",
+                    "can_cu_phap_ly": "Theo Điều 11 Nghị định 320/2025/ND-CP, thuế suất 20%.",
                 },
                 ensure_ascii=False,
             )
@@ -475,7 +475,8 @@ class DraftingGroundingTests(unittest.TestCase):
         self.assertEqual(ranked[0].payload["article"], "Điều 10")
 
     def test_scaled_billion_formatting_and_numbers_in_law_text_are_authorized(self):
-        # Task #15 (E2 & E3): "2,800 tỷ đồng" / "2,8 tỷ đồng" for 2_800_000_000 and "05" from law text are valid.
+        # Task #15 (E2 & E3): "2,8 tỷ đồng" / "2.800.000.000 đồng" for 2_800_000_000 and "05" from law text are valid.
+        # "2,800 tỷ đồng" is no longer accepted: it reads as 2,800 billion (v1.0 eval SH-03).
         law_hit = _make_hit(
             article="Điều 16",
             clause="Khoản 1",
@@ -485,7 +486,7 @@ class DraftingGroundingTests(unittest.TestCase):
             content=json.dumps(
                 {
                     "revenue": 2_800_000_000,
-                    "noi_dung_giai_trinh": "Tổng doanh thu ghi nhận là 2,800 tỷ đồng (tương đương 2,8 tỷ đồng).",
+                    "noi_dung_giai_trinh": "Tổng doanh thu ghi nhận là 2,8 tỷ đồng (2.800.000.000 đồng).",
                     "can_cu_phap_ly": "Theo Khoản 1 Điều 16 Nghị định 320/2025/ND-CP, thời gian chuyển lỗ không quá 05 năm.",
                 },
                 ensure_ascii=False,
