@@ -1,3 +1,5 @@
+using Caps.Common.Domain;
+
 namespace Caps.Workflow.Domain.Review;
 
 // The client's complaint about a delivery and the admin's decision

@@ -1,3 +1,5 @@
+using Caps.Common.Domain;
+
 namespace Caps.Workflow.Domain.Review;
 
 // How a case ends without a user action, and how its fee splits

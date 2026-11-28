@@ -1,4 +1,4 @@
-using Caps.Workflow.Domain.Review;
+using Caps.Common.Domain;
 
 namespace Caps.Workflow.UnitTests;
 
