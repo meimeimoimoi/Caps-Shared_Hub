@@ -125,6 +125,40 @@ _REVENUE_LABEL = r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?"
 _GENERAL_RATE_MARKERS = ("phổ thông", "thuế suất chung", "thông thường", "thuế suất cơ bản")
 _YES_NO_QUESTION_RE = re.compile(r"\b(?:đúng\s+không|có\s+đúng|phải\s+không|đúng\s+hay\s+sai)\b", re.IGNORECASE)
 _AFFIRMS_RE = re.compile(r"^\W*(?:đúng|chính\s+xác|phải)\b", re.IGNORECASE)
+_DENIES_PREMISE_RE = re.compile(r"^\W*(?:sai|không\s+(?:đúng|phải|chính\s+xác)|chưa\s+(?:đúng|chính\s+xác))\b", re.IGNORECASE)
+# "trong 10 năm", "05 năm"; a period year such as "năm 2026" puts the number after the word.
+_DURATION_RE = re.compile(r"\b(\d{1,3})\s+năm\b", re.IGNORECASE)
+_SLASH_DATE_RE = re.compile(r"(?<![\d/])(\d{1,2})/(\d{1,2})(?:/\d{4})?(?![\d/])")
+_WORDED_DATE_RE = re.compile(r"\bngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\b", re.IGNORECASE)
+
+
+def _dates(text: str) -> set[tuple[int, int]]:
+    found = _SLASH_DATE_RE.findall(text) + _WORDED_DATE_RE.findall(text)
+    return {(int(d), int(m)) for d, m in found if 1 <= int(d) <= 31 and 1 <= int(m) <= 12}
+
+
+def affirms_unsupported_premise(question: str, conclusion: str, used_chunks: list) -> str | None:
+    """Return a retry note when a yes/no question is answered "Đúng" though a duration or date in it is not in the cited law.
+
+    TS-09 "17% trong 10 năm đúng không?" and KK-10 "hạn nộp là ngày 30/4/2027 đúng không?" were both answered "Đúng".
+    """
+    body = CITATION_MARKER_RE.sub(" ", conclusion or "")
+    if not _YES_NO_QUESTION_RE.search(question or "") or not _AFFIRMS_RE.search(body):
+        return None
+    law_text = _chunks_text(used_chunks)
+    q_low = (question or "").lower()
+    law_years = {int(n) for n in _DURATION_RE.findall(law_text)}
+    missing = [f"{int(n)} năm" for n in _DURATION_RE.findall(q_low) if int(n) not in law_years]
+    law_dates = _dates(law_text)
+    missing += [f"ngày {d}/{m}" for d, m in sorted(_dates(q_low)) if (d, m) not in law_dates]
+    if not missing:
+        return None
+    return (
+        "Kết luận trước xác nhận 'Đúng' nhưng tiền đề trong câu hỏi có chi tiết không có trong đoạn căn cứ đã dùng: "
+        + ", ".join(missing)
+        + ". Không được xác nhận chi tiết đó. Hãy trả lời 'Sai' hoặc 'Sai một phần', nói rõ phần nào của tiền đề sai "
+        "và nêu quy định đúng theo đoạn căn cứ."
+    )
 _REDUCTION_LIMIT_RE = re.compile(r"doanh\s+thu[^.;]{0,60}?không\s+quá\s+(\d+(?:[.,]\d+)?)\s*tỷ", re.IGNORECASE)
 _GRANTS_REDUCTION_RE = re.compile(r"\bđược\s+giảm\s+30\s*%", re.IGNORECASE)
 _DENIES_REDUCTION_RE = re.compile(r"\b(?:không|chưa)\s+(?:được\s+|đủ\s+điều\s+kiện\s+)?(?:giảm|hưởng)", re.IGNORECASE)
@@ -164,10 +198,10 @@ def mismatched_bracket_rate(
     stated = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(body)}
     bracket_rates = stated & {15.0, 17.0, 20.0}
 
-    if _YES_NO_QUESTION_RE.search(question or "") and _AFFIRMS_RE.search(body):
+    if _YES_NO_QUESTION_RE.search(question or "") and not _DENIES_PREMISE_RE.search(body):
         asked = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(question or "")} & {15.0, 17.0, 20.0}
         if asked and expected not in asked:
-            # TS-11: "doanh thu 5 tỷ được áp thuế suất 15% đúng không?" answered "Đúng ... 17%".
+            # TS-11: "doanh thu 5 tỷ được áp thuế suất 15% đúng không?" answered "Đúng ... 17%" or just "... 17%".
             return (
                 f"Tiền đề trong câu hỏi sai: theo đoạn căn cứ, mức thuế suất áp dụng là {expected:g}%, không phải "
                 + ", ".join(f"{r:g}%" for r in sorted(asked))
@@ -307,7 +341,7 @@ def missing_verified_tax_note(conclusion: str, calc_hint: CitCalcHint | None) ->
     if conclusion_nums & calc_hint.expected_tax_numbers:
         return None
     return (
-        f"Kết luận trước chưa nêu đúng số thuế TNDN phải nộp đã kiểm toán là {calc_hint.expected_tax_label}. "
+        f"Kết luận trước chưa nêu đúng {calc_hint.expected_result_name} đã kiểm toán là {calc_hint.expected_tax_label}. "
         "Bắt buộc sử dụng đúng kết quả tính thuế đã kiểm toán bằng code, không lấy nhầm thu nhập tính thuế hay doanh thu."
     )
 
@@ -352,6 +386,7 @@ _REPEATED_PAYMENT_RE = re.compile(
     r"(\d+)\s*lần[^.;\n]{0,20}?mỗi\s+lần\s+(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn)", re.IGNORECASE
 )
 _QUESTION_AMOUNT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn)\b", re.IGNORECASE)
+_LEADS_WITH_YES_RE = re.compile(r"^\W*(?:có|đúng)\b", re.IGNORECASE)
 _PER_PERSON_CAP_RE = re.compile(
     r"không\s+quá\s+(\d+(?:[.,]\d+)?)\s*triệu\s+đồng\s*/\s*(?:01\s+|1\s+)?người\s*/\s*năm", re.IGNORECASE
 )
@@ -440,7 +475,8 @@ def contradicts_non_deductible_rule(question: str, conclusion: str, retrieved_ch
         buys_from_seller
         and "tiền mặt" in q_low
         and "không dùng tiền mặt" in law_low
-        and "không dùng tiền mặt" not in body.lower()
+        # Naming the condition is enough only when the answer does not open with a plain yes (CP-03).
+        and ("không dùng tiền mặt" not in body.lower() or _LEADS_WITH_YES_RE.search(body))
     ):
         threshold_match = _CASH_THRESHOLD_RE.search(law_text)
         repeated = _REPEATED_PAYMENT_RE.search(q_low)

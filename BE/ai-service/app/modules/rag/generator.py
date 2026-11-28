@@ -13,6 +13,7 @@ from app.modules.rag.cit_calculator import (
 )
 from app.modules.rag.guardrails import (
     CITATION_MARKER_RE,
+    affirms_unsupported_premise,
     allowed_document_numbers_from_chunks,
     backfill_sources_for_figures,
     citation_indexes,
@@ -313,6 +314,11 @@ class GroundedGenerator:
             if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks, retrieved_chunks):
                 logger.info("Chat answer stated a rate outside the revenue bracket (attempt %d)", attempt + 1)
                 retry_note = rate_note
+                continue
+
+            if premise_note := affirms_unsupported_premise(question, conclusion_text, used_chunks):
+                logger.info("Chat answer affirmed a premise the sources do not state (attempt %d)", attempt + 1)
+                retry_note = premise_note
                 continue
 
             if reduction_note := mismatched_reduction_eligibility(question, conclusion_text, retrieved_chunks):

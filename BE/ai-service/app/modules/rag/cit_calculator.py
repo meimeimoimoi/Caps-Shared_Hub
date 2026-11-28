@@ -37,6 +37,8 @@ class CitCalcHint:
     authorized_numbers: set[str] = field(default_factory=set)
     expected_tax_numbers: set[str] = field(default_factory=set)
     expected_tax_label: str | None = None
+    # What the expected figure is, named in the retry note when the conclusion omits it.
+    expected_result_name: str = "số thuế TNDN phải nộp"
     formula_only: bool = False
 
 
@@ -282,7 +284,8 @@ def _money(raw: str, unit: str) -> float | None:
     return val * UNIT_SCALE_VND[unit.lower()] if val is not None else None
 
 
-def _cap_hint(lines: list[str], numbers: list[float]) -> CitCalcHint:
+def _cap_hint(lines: list[str], numbers: list[float], result: float, result_name: str) -> CitCalcHint:
+    """Build a cap hint whose result, the non-deductible part, the conclusion must state (TT-06)."""
     authorized: set[str] = set()
     for amount in numbers:
         authorized |= money_representations(amount)
@@ -290,6 +293,9 @@ def _cap_hint(lines: list[str], numbers: list[float]) -> CitCalcHint:
         prompt_block="KẾT QUẢ TÍNH ĐÃ KIỂM TOÁN BẰNG CODE (BẮT BUỘC DÙNG ĐÚNG KẾT QUẢ NÀY, KHÔNG TỰ TÍNH KHÁC):\n"
         + "\n".join(lines),
         authorized_numbers=authorized,
+        expected_tax_numbers=money_representations(result),
+        expected_tax_label=format_vnd_human(result),
+        expected_result_name=result_name,
     )
 
 
@@ -313,6 +319,8 @@ def compute_cap_excess_hint(question: str, retrieved_chunks: list) -> CitCalcHin
                     f"- Phần chi phúc lợi vượt mức, không được trừ = {format_vnd_human(excess)}",
                 ],
                 [salary, welfare, excess],
+                excess,
+                "phần chi phúc lợi vượt mức, không được trừ",
             )
 
     cost_m, years_m = _CAR_COST_RE.search(q_norm), _CAR_YEARS_RE.search(q_norm)
@@ -331,5 +339,7 @@ def compute_cap_excess_hint(question: str, retrieved_chunks: list) -> CitCalcHin
                     f"- Khấu hao phần vượt mỗi năm, không được trừ = {format_vnd_human(excess)} / {years} năm = {format_vnd_human(per_year)}",
                 ],
                 [cost, cap, excess, per_year],
+                per_year,
+                "phần khấu hao không được trừ mỗi năm",
             )
     return None

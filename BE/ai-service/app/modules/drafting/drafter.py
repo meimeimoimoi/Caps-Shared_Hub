@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 from typing import Any
 
 from app.core.ai_response import parse_ai_response
@@ -34,6 +35,8 @@ from app.modules.drafting.validators import (
 )
 from app.schemas.ai_results import DraftContent
 from app.schemas.drafting_dto import DraftIssueItem, DraftIssueSeverity
+
+logger = logging.getLogger(__name__)
 
 _INJECTION_QUERY_MARKERS = (
     "trích thông tư",
@@ -233,31 +236,46 @@ class DocumentDrafter:
             else {}
         )
 
-        prompt = build_draft_prompt(
-            snapshot_data=snapshot_data,
-            template_schema=template_schema,
-            legal_context=legal_context,
-            derived_tax_info=derived_tax_info or None,
-        )
-        res = llm_model.invoke(prompt)
-        raw_draft_content = parse_ai_response(res.content, DraftContent).root
+        retry_note: str | None = None
+        for attempt in range(2):
+            prompt = build_draft_prompt(
+                snapshot_data=snapshot_data,
+                template_schema=template_schema,
+                legal_context=legal_context,
+                derived_tax_info=derived_tax_info or None,
+                retry_note=retry_note,
+            )
+            res = llm_model.invoke(prompt)
+            raw_draft_content = parse_ai_response(res.content, DraftContent).root
 
-        draft_content, tax_issues = _enrich_draft_content(
-            draft_content=raw_draft_content,
-            snapshot_data=raw_snapshot,
-            template_schema=template_schema,
-            has_legal_basis=has_legal_basis,
-            derived_tax_info=derived_tax_info or None,
-        )
+            draft_content, tax_issues = _enrich_draft_content(
+                draft_content=raw_draft_content,
+                snapshot_data=raw_snapshot,
+                template_schema=template_schema,
+                has_legal_basis=has_legal_basis,
+                derived_tax_info=derived_tax_info or None,
+            )
 
-        unauthorized = find_unauthorized_draft_numbers(
-            draft_content=draft_content,
-            snapshot_data=snapshot_data,
-            derived_tax_info=derived_tax_info or None,
-            citations=resolved_citations,
-            legal_context=legal_context,
-            retrieved_hits=retrieved_hits,
-        )
+            unauthorized = find_unauthorized_draft_numbers(
+                draft_content=draft_content,
+                snapshot_data=snapshot_data,
+                derived_tax_info=derived_tax_info or None,
+                citations=resolved_citations,
+                legal_context=legal_context,
+                retrieved_hits=retrieved_hits,
+            )
+            if not unauthorized or attempt == 1:
+                break
+            # SH-01/SH-03: the model copied a sample tax code and revenue from an example in the law text.
+            logger.info("Draft has numbers outside the snapshot %s; drafting again", unauthorized)
+            # Numbers from injected snapshot instructions never reach the prompt (SH-05).
+            raw_text = json.dumps(raw_snapshot, ensure_ascii=False)
+            listed = [num for num in unauthorized if num not in raw_text]
+            retry_note = (
+                "bản nháp trước có số liệu không có trong Input Snapshot"
+                + (": " + ", ".join(listed) if listed else "")
+                + ". Bỏ các số này; tên, mã số thuế và số liệu của doanh nghiệp chỉ lấy từ Input Snapshot."
+            )
         law_text = " ".join(
             [legal_context or ""]
             + [str((getattr(hit, "payload", None) or {}).get("text_content") or "") for hit in retrieved_hits or []]
