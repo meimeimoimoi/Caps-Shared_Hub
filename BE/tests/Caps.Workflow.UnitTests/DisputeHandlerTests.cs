@@ -229,6 +229,7 @@ public sealed class DisputeHandlerTests
         public Task ReleaseAsync(
             Guid reviewCaseId,
             Guid expertUserId,
+            string? expertEmail,
             ReviewSettlement settlement,
             CancellationToken ct
         )

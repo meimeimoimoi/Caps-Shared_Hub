@@ -1,4 +1,5 @@
 using Caps.Billing.Domain;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.Application.DTOs.Responses;
 
@@ -17,10 +18,15 @@ public sealed record PayoutResponse(
     string? LastError,
     string? ProviderRef,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? CompletedAt
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset TransferableFrom,
+    DateTimeOffset DueAt,
+    DateTimeOffset RemindAt,
+    bool AttemptsExhausted,
+    PayoutHistoryResponse[] History
 )
 {
-    public static PayoutResponse From(PayoutTransaction x) =>
+    public static PayoutResponse From(PayoutTransaction x, WorkCalendar calendar) =>
         new(
             x.Id.ToString(),
             x.SettlementId.ToString(),
@@ -35,9 +41,35 @@ public sealed record PayoutResponse(
             x.LastError,
             x.ProviderRef,
             x.CreatedAt,
-            x.CompletedAt
+            x.CompletedAt,
+            x.TransferableFrom,
+            x.DueAt(calendar),
+            x.RemindAt(calendar),
+            x.AttemptsExhausted,
+            [
+                .. x
+                    .History.OrderBy(h => h.At)
+                    .Select(h => new PayoutHistoryResponse(
+                        h.Status,
+                        h.AttemptNo,
+                        h.AccountLast4,
+                        h.ActorUserId?.ToString(),
+                        h.Note,
+                        h.At
+                    )),
+            ]
         );
 }
 
 /// <summary>A page of payouts, newest first.</summary>
 public sealed record PayoutPageResponse(PayoutResponse[] Items, int Page, int PageSize, int Total);
+
+/// <summary>One status change of a payout; ActorUserId is null when the system or PayOS made it.</summary>
+public sealed record PayoutHistoryResponse(
+    string Status,
+    int AttemptNo,
+    string? AccountLast4,
+    string? ActorUserId,
+    string? Note,
+    DateTimeOffset At
+);

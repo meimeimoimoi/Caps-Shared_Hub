@@ -21,9 +21,10 @@ public sealed record SettleCaseEscrowRequest(
     [Required] Guid? ExpertUserId,
     [Range(0, long.MaxValue)] long UserRefund,
     [Range(0, long.MaxValue)] long PlatformFee,
-    [Range(0, long.MaxValue)] long ExpertPayout
+    [Range(0, long.MaxValue)] long ExpertPayout,
+    [EmailAddress, MaxLength(256)] string? ExpertEmail = null
 )
 {
     public SettleCaseEscrowCommand ToCommand(Guid reviewCaseId) =>
-        new(reviewCaseId, ExpertUserId!.Value, UserRefund, PlatformFee, ExpertPayout);
+        new(reviewCaseId, ExpertUserId!.Value, UserRefund, PlatformFee, ExpertPayout, ExpertEmail);
 }

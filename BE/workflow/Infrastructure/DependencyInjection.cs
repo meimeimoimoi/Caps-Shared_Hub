@@ -1,7 +1,7 @@
+using Caps.Common.Domain;
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
-using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Infrastructure.Clients;
 using Caps.Workflow.Infrastructure.Documents;
 using Caps.Workflow.Infrastructure.Integrations;

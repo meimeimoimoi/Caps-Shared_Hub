@@ -1,7 +1,7 @@
-namespace Caps.Workflow.Domain.Review;
+namespace Caps.Common.Domain;
 
 /// <summary>
-/// Working days for the case deadlines (meeting of 2026-11-11): Saturdays, Sundays and the fixed solar public
+/// Working days for deadlines (review cases: meeting of 2026-11-11; payouts: advisor 2026-11-28): Saturdays, Sundays and the fixed solar public
 /// holidays (the same day every year, written MM-dd) do not count, so a deadline that would fall on one moves to
 /// the next working day.
 /// </summary>

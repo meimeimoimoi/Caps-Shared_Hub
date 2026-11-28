@@ -18,4 +18,7 @@ public interface IPayoutRepository
 
     /// <summary>Tracked and locked (FOR UPDATE) until the transaction ends; null when it does not exist.</summary>
     Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct);
+
+    /// <summary>Every PENDING or FAILED payout, read-only, for the daily reminders.</summary>
+    Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct);
 }

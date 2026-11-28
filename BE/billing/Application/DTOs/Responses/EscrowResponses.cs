@@ -41,7 +41,7 @@ public sealed record SettlementResponse(
     PayoutResponse? Payout
 )
 {
-    public static SettlementResponse From(Settlement x, Escrow escrow, PayoutTransaction? payout) =>
+    public static SettlementResponse From(Settlement x, Escrow escrow, PayoutResponse? payout) =>
         new(
             x.Id.ToString(),
             EscrowResponse.From(escrow),
@@ -50,6 +50,6 @@ public sealed record SettlementResponse(
             x.ExpertPayoutAmount,
             x.PlatformFeeAmount,
             x.SettledAt,
-            payout == null ? null : PayoutResponse.From(payout)
+            payout
         );
 }

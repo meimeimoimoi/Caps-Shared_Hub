@@ -1,12 +1,14 @@
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Application.Common;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.Application.Features.Payouts;
 
 /// <summary>Staff send a PENDING or FAILED payout to the expert's bank account.</summary>
-public sealed record TransferPayoutCommand(Guid PayoutId);
+public sealed record TransferPayoutCommand(Guid PayoutId, Guid StaffId);
 
 /// <summary>
 /// Sends the transfer through the provider. The attempt is committed as PROCESSING before the call, so a lost
@@ -20,7 +22,9 @@ public sealed class TransferPayoutHandler(
     IAccountNumberProtector protector,
     IPayoutGateway gateway,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar calendar,
+    IBillingNotificationOutbox outbox
 ) : ICommandHandler<TransferPayoutCommand, PayoutResponse>
 {
     /// <summary>Shown on the expert's bank statement; plain ASCII, as banks may drop diacritics.</summary>
@@ -54,9 +58,12 @@ public sealed class TransferPayoutHandler(
                         ? BillingErrors.PayoutNoBankAccount()
                         : BillingErrors.PayoutAccountNotVerified()
                 );
-            if (account.Id != payout.BankAccountId)
+            var newAccount = account.Id != payout.BankAccountId;
+            if (newAccount)
+            {
                 payout.UseAccount(account, now);
-            payout.StartAttempt(now);
+            }
+            payout.StartAttempt(command.StaffId, now, newAccount);
             accountNumber = protector.Reveal(account.AccountNumberEnc);
             await unitOfWork.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
@@ -77,7 +84,8 @@ public sealed class TransferPayoutHandler(
             payout.Apply(report.ProviderRef, report.Status, report.Error, after);
         else
             payout.Fail(submission.Refusal ?? "REFUSED", after);
+        PayoutNotices.Enqueue(outbox, payout, after);
         await unitOfWork.SaveChangesAsync(ct);
-        return PayoutResponse.From(payout);
+        return PayoutResponse.From(payout, calendar);
     }
 }

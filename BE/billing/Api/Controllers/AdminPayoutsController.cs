@@ -11,8 +11,10 @@ namespace Caps.Billing.Api.Controllers;
 /// <summary>Staff view and PayOS transfer of payouts to experts (SYSTEM_ADMIN).</summary>
 [ApiController, Route("api/v1/admin/billing/payouts")]
 [RequirePermission(Permission.PayoutManage), RequireSessionCheck]
-public sealed class AdminPayoutsController : ControllerBase
+public sealed class AdminPayoutsController(ICurrentUser currentUser) : ControllerBase
 {
+    private Guid UserId => currentUser.RequireUserId();
+
     /// <summary>Lists payouts newest first, optionally filtered by status.</summary>
     /// <remarks>
     /// status is matched case-insensitively (e.g. PENDING); page starts at 1, pageSize defaults to 20 and is at
@@ -62,7 +64,7 @@ public sealed class AdminPayoutsController : ControllerBase
         CancellationToken ct
     )
     {
-        var payout = await handler.HandleAsync(new(payoutId), ct);
+        var payout = await handler.HandleAsync(new(payoutId, UserId), ct);
         return Ok(ApiResponse<PayoutResponse>.Ok(payout));
     }
 

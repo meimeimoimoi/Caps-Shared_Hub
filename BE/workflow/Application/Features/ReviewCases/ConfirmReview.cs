@@ -33,7 +33,13 @@ public sealed class ConfirmReviewHandler(
         var completed = reviewCase.Confirm(command.UserId, clock.GetUtcNow());
 
         // Release before saving: if billing fails the case stays awaiting acceptance and can be retried
-        await escrows.ReleaseAsync(reviewCase.Id, reviewCase.ExpertUserId, reviewCase.Settle(), ct);
+        await escrows.ReleaseAsync(
+            reviewCase.Id,
+            reviewCase.ExpertUserId,
+            reviewCase.ExpertEmail,
+            reviewCase.Settle(),
+            ct
+        );
         // Both calls are idempotent, so a retry after a failure here settles and frees nothing twice
         await slots.ReleaseAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
 

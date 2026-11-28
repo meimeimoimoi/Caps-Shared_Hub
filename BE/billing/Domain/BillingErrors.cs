@@ -136,6 +136,20 @@ public static class BillingErrors
             "The expert's bank account has not been verified by staff."
         );
 
+    public static AppException PayoutOnHold(DateTimeOffset until) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_ON_HOLD",
+            $"The payout is held until {until:O} and cannot be sent before then."
+        );
+
+    public static AppException PayoutAttemptsExhausted(int max) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_ATTEMPTS_EXHAUSTED",
+            $"The payout failed {max} times; the expert must link another verified bank account."
+        );
+
     public static AppException AiCreditHoldNotFound() =>
         new(
             ErrorType.NotFound,

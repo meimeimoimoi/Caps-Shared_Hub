@@ -1731,6 +1731,20 @@
     "transfer": "Transfer",
     "retry": "Transfer again",
     "refresh": "Check result",
+    "heldUntil": "Can be sent from {{date}}",
+    "stage": {
+      "overdue": "Past the {{date}} deadline",
+      "dueSoon": "Deadline {{date}} is near",
+      "ready": "Ready to send, deadline {{date}}",
+      "holding": "In the 7-day hold, deadline {{date}}"
+    },
+    "history": {
+      "title": "History ({{count}})",
+      "attempt": "attempt {{n}}",
+      "by": "by {{id}}",
+      "system": "system or PayOS"
+    },
+    "attemptsExhausted": "Failed {{count}} times. The expert must add another account and have it verified before it is sent again.",
     "confirm": "Confirm transfer of {{amount}}",
     "cancel": "Cancel",
     "result": {
@@ -1743,6 +1757,8 @@
       "notTransferable": "This payout is already being transferred or has been paid.",
       "noAccount": "The expert has no bank account to receive this payout.",
       "notFound": "Payout not found.",
+      "onHold": "This payout is still in its 7-day hold after settlement and cannot be sent yet.",
+      "attemptsExhausted": "This payout has no retries left. The expert must add another account and have it verified.",
       "unavailable": "No answer from PayOS yet (payout channel not configured or PayOS not responding). Use Check result in a few minutes.",
       "sessionCheck": "Your session could not be checked; try again later.",
       "notVerified": "The expert's bank account is not verified yet. Review it under Verify payout accounts first."

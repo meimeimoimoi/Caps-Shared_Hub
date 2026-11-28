@@ -1,8 +1,8 @@
 using Caps.Common.Application;
+using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
-using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.Disputes;
 

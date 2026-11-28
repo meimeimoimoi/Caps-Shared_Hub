@@ -26,7 +26,7 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
                     ? source.OrderByDescending(x => x.CreatedAt)
                     : source.OrderBy(x => x.CreatedAt);
         var stable = descending ? ordered.ThenByDescending(x => x.Id) : ordered.ThenBy(x => x.Id);
-        return await stable.Skip(skip).Take(take).ToListAsync(ct);
+        return await stable.Include(x => x.History).Skip(skip).Take(take).ToListAsync(ct);
     }
 
     public Task<int> CountAsync(string? status, CancellationToken ct) =>
@@ -38,6 +38,12 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
                 $"SELECT * FROM billing.payout_transaction WHERE id = {id} FOR UPDATE"
             )
             .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
+        await db
+            .PayoutTransactions.AsNoTracking()
+            .Where(x => x.Status == PayoutStatus.Pending || x.Status == PayoutStatus.Failed)
+            .ToListAsync(ct);
 
     private IQueryable<PayoutTransaction> Filter(string? status) =>
         status == null
