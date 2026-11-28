@@ -426,6 +426,14 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
     export_dir = get_export_dir()
     manifest: List[dict] = []
     for rec in records:
+        if not (rec.get("noi_dung_text") or "").strip():
+            # No text (download failed): exporting would make BE store an empty new version, so only report it
+            entry = {"document_number": _document_number(rec), "source": rec.get("source") or "vbpl",
+                     "text_source": rec.get("text_source"), "doc_type": rec.get("loai_van_ban"),
+                     "skipped": "NO_TEXT"}
+            manifest.append(entry)
+            logger.warning(f"[{entry['document_number']}] NO_TEXT: bỏ qua, không xuất file")
+            continue
         payload = build_payload(rec)
         folder = config.get_folder_name(rec.get("loai_van_ban") or "")
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")
