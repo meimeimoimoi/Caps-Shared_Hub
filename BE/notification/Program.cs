@@ -6,6 +6,7 @@ using Caps.Notification.Data;
 using Caps.Notification.Features.AuditLogs;
 using Caps.Notification.Features.AuthEmails;
 using Caps.Notification.Features.ExpertDecisions;
+using Caps.Notification.Features.Payouts;
 using Caps.Notification.Features.Realtime;
 using Caps.Notification.Features.ReviewCases;
 
@@ -24,6 +25,8 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertServiceAccessChangedConsumer>();
         x.AddConsumer<PlatformFeeChangeAnnouncedConsumer>();
         x.AddConsumer<ExpertPriceOutOfRangeConsumer>();
+        x.AddConsumer<ExpertPayoutNoticeConsumer>();
+        x.AddConsumer<PayoutDigestConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
         x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
