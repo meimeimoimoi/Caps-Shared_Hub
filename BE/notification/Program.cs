@@ -22,6 +22,8 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertEligibilityDecidedConsumer>();
         x.AddConsumer<ExpertCompetencyDecidedConsumer>();
         x.AddConsumer<ExpertServiceAccessChangedConsumer>();
+        x.AddConsumer<PlatformFeeChangeAnnouncedConsumer>();
+        x.AddConsumer<ExpertPriceOutOfRangeConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
         x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
@@ -30,9 +32,11 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ReviewCaseResponseDueConsumer>();
         x.AddConsumer<ReviewCaseStatementDueConsumer>();
         x.AddConsumer<ReviewCaseDisputeOverdueConsumer>();
+        x.AddConsumer<ReviewCaseDisputeExtendedConsumer>();
         x.AddConsumer<ReviewCaseExtensionRequestedConsumer>();
         x.AddConsumer<ReviewCaseExtensionDecidedConsumer>();
         x.AddConsumer<ExpertExcuseRequestedConsumer>();
+        x.AddConsumer<ExpertViolationRecordedConsumer>();
         x.AddConsumer<AuditRecordedConsumer>();
     }
 );

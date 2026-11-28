@@ -173,6 +173,34 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, "bạn", email, m.OccurredAt, link, []);
     }
 
+    public static Content Build(ReviewCaseRequestedEvent m, string email, string link)
+    {
+        var due = m
+            .ResponseDeadline.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Bạn có yêu cầu thẩm định mới – {Brand}",
+            "Có khách hàng gửi hồ sơ cho bạn",
+            $"Khách đã thanh toán phí cho một hồ sơ cần thẩm định. Vui lòng nhận hoặc từ chối trước {due}; quá hạn, hồ sơ tự hủy và phí được hoàn cho khách.",
+            "Xem yêu cầu"
+        );
+        return Render(copy, "bạn", email, m.OccurredAt, link, []);
+    }
+
+    public static Content Build(ReviewCaseResponseDueEvent m, string email, string link)
+    {
+        var due = m
+            .ResponseDeadline.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Yêu cầu thẩm định sắp hết hạn phản hồi – {Brand}",
+            "Bạn chưa phản hồi yêu cầu thẩm định",
+            $"Một hồ sơ vẫn đang chờ bạn nhận hoặc từ chối. Vui lòng phản hồi trước {due}; quá hạn, hồ sơ tự hủy và phí được hoàn cho khách.",
+            "Xem yêu cầu"
+        );
+        return Render(copy, "bạn", email, m.OccurredAt, link, []);
+    }
+
     // Same code as the workflow service sets when an expert gives up an accepted case
     private const string ExpertWithdrew = "EXPERT_WITHDREW";
 
@@ -354,6 +382,50 @@ public static class ExpertDecisionEmailTemplate
             ? new List<Issue>()
             : [new Issue(m.ServiceName, label, m.Note)];
         return Render(copy, m.DisplayName, m.Email, m.ChangedAt, link, issues);
+    }
+
+    public static Content Build(PlatformFeeChangeAnnouncedEvent m, string link)
+    {
+        var day = Day(m.EffectiveFrom);
+        var copy = m.Cancelled
+            ? new Copy(
+                $"Thay đổi phí nền tảng đã được hủy – {Brand}",
+                "Phí nền tảng giữ nguyên",
+                $"Thay đổi phí nền tảng của dịch vụ {m.ServiceName} dự kiến áp dụng từ {day} đã được hủy. Phí vẫn là {m.CurrentPercent}%: với giá {Vnd(m.Fee)}, bạn tiếp tục nhận {Vnd(m.NetNow)} mỗi hồ sơ.",
+                "Xem bảng giá"
+            )
+            : new Copy(
+                $"Phí nền tảng sắp thay đổi – {Brand}",
+                "Phí nền tảng sắp thay đổi",
+                $"Từ {day}, phí nền tảng của dịch vụ {m.ServiceName} đổi từ {m.CurrentPercent}% thành {m.NewPercent}%. Với giá hiện tại {Vnd(m.Fee)}, bạn đang nhận {Vnd(m.NetNow)} mỗi hồ sơ; từ {day} sẽ nhận {Vnd(m.NetNew)}. Hồ sơ đặt trước ngày đó giữ mức phí cũ. Bạn có thể điều chỉnh giá hoặc tạm ngưng nhận hồ sơ trước ngày áp dụng.",
+                "Xem bảng giá"
+            );
+        var issues =
+            m.Cancelled || string.IsNullOrWhiteSpace(m.Reason)
+                ? new List<Issue>()
+                : [new Issue(m.ServiceName, "Lý do thay đổi", m.Reason)];
+        return Render(copy, m.DisplayName, m.Email, m.OccurredAt, link, issues);
+    }
+
+    private static string Vnd(long amount) =>
+        amount.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', '.') + " đ";
+
+    public static Content Build(ExpertPriceOutOfRangeEvent m, string link)
+    {
+        var copy = new Copy(
+            $"Dịch vụ của bạn đang bị ẩn khỏi sàn – {Brand}",
+            "Giá của bạn nằm ngoài khoảng giá mới",
+            $"Khoảng giá cho phép vừa đổi thành {Vnd(m.MinFee)} – {Vnd(m.MaxFee)}. Giá {Vnd(m.Fee)} của bạn cho dịch vụ {m.ServiceName} nằm ngoài khoảng này, nên dịch vụ đang tạm ẩn khỏi sàn và không nhận yêu cầu mới. Hồ sơ khách đã đặt vẫn giữ giá cũ. Hãy chỉnh giá về trong khoảng mới để dịch vụ hiện lại trên sàn.",
+            "Chỉnh giá"
+        );
+        return Render(
+            copy,
+            m.DisplayName,
+            m.Email,
+            m.OccurredAt,
+            link,
+            [new Issue(m.ServiceName, "Lý do thay đổi", m.Reason)]
+        );
     }
 
     private static string? Day(DateTimeOffset? at) =>

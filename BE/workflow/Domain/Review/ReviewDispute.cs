@@ -42,6 +42,11 @@ public sealed class ReviewDispute
     public DateTimeOffset DecideBy { get; private set; }
     public bool Extended { get; private set; }
 
+    /// <summary>Who extended the deadline, when and why; null until extended.</summary>
+    public Guid? ExtendedBy { get; private set; }
+    public DateTimeOffset? ExtendedAt { get; private set; }
+    public string? ExtensionReason { get; private set; }
+
     /// <summary>Set by the expiry job when it alerts the operations inbox; cleared by an extension.</summary>
     public DateTimeOffset? OverdueAlertedAt { get; private set; }
     public string? ExpertStatement { get; private set; }
@@ -77,21 +82,46 @@ public sealed class ReviewDispute
             StatementDueBy = calendar.AddWorkingDays(now, WorkingDaysToRespond),
         };
 
-    /// <summary>The admin needs more time: one more decision window, once.</summary>
-    public void Extend(WorkCalendar? calendar = null)
+    /// <summary>Shortest reason an admin must give for extending, like the other admin actions.</summary>
+    public const int MinExtensionReasonLength = 10;
+
+    /// <summary>
+    /// The admin needs more time: one more decision window, once, with a reason; also allowed after the deadline
+    /// passed. Who, when and why are kept so the extension can be audited.
+    /// </summary>
+    public void Extend(
+        Guid adminUserId,
+        string? reason,
+        DateTimeOffset now,
+        WorkCalendar? calendar = null
+    )
     {
         EnsureOpen();
         if (Extended)
         {
             throw WorkflowErrors.DisputeAlreadyExtended();
         }
+        var why = reason?.Trim() ?? "";
+        if (why.Length < MinExtensionReasonLength)
+        {
+            throw WorkflowErrors.DisputeExtensionReasonRequired(MinExtensionReasonLength);
+        }
         Extended = true;
+        ExtendedBy = adminUserId;
+        ExtendedAt = now;
+        ExtensionReason = why;
         DecideBy = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
             DecideBy,
             WorkingDaysToDecide
         );
         OverdueAlertedAt = null;
     }
+
+    /// <summary>
+    /// Both parties add evidence while the statement window is open; an extension reopens it until the new
+    /// decision deadline, since the admin extends to wait for more evidence.
+    /// </summary>
+    public bool EvidenceOpen(DateTimeOffset now) => now < (Extended ? DecideBy : StatementDueBy);
 
     internal void AddStatement(string statement, DateTimeOffset now)
     {

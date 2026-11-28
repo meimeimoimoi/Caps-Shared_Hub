@@ -69,7 +69,23 @@ export async function getUsers(signal?: AbortSignal) {
   return [...users.values()]
 }
 
-/** Lock or unlock an account. */
+/** Workflow's open review cases of the account, as the client and as the expert */
+export interface OpenCaseCount {
+  asClient: number
+  asExpert: number
+}
+
+/** How many review cases would be left hanging if the account were locked now. */
+export async function getOpenCases(id: string, signal?: AbortSignal) {
+  if (isExpertDemo) return { asClient: 0, asExpert: 0 }
+  const { data } = await api.get<{ data: OpenCaseCount }>(
+    '/api/v1/admin/review-cases/open-count',
+    { params: { userId: id }, signal }
+  )
+  return data
+}
+
+/** Lock or unlock an account; both need a reason, kept in the audit trail. */
 export async function setUserLocked(
   id: string,
   locked: boolean,
@@ -86,27 +102,31 @@ export async function setUserLocked(
       actor,
       text: locked
         ? `Khóa tài khoản: ${reason}`
-        : `Mở khóa tài khoản${reason ? `: ${reason}` : ''}`,
+        : `Mở khóa tài khoản: ${reason}`,
     })
     return
   }
   if (locked) {
     await api.post(`${BASE}/${id}/lock`, { reason })
   } else {
-    await api.post(`${BASE}/${id}/unlock`)
+    await api.post(`${BASE}/${id}/unlock`, { reason })
   }
 }
 
-/** Request a password reset email for the account. */
-export async function sendPasswordReset(id: string, actor: string) {
+/** Request a password reset email for the account, with the reason kept in the audit trail. */
+export async function sendPasswordReset(
+  id: string,
+  reason: string,
+  actor: string
+) {
   if (isExpertDemo) {
     const user = (await fixtures()).mockUsers.find((x) => x.id === id)
     user?.history?.unshift({
       at: new Date().toISOString(),
       actor,
-      text: 'Gửi email đặt lại mật khẩu',
+      text: `Gửi email đặt lại mật khẩu: ${reason}`,
     })
     return
   }
-  await api.post(`${BASE}/${id}/password-reset`)
+  await api.post(`${BASE}/${id}/password-reset`, { reason })
 }

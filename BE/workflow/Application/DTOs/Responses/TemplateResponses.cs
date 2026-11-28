@@ -11,7 +11,8 @@ public sealed record TemplateSummaryResponse(
     string? Description,
     string VersionId,
     int VersionNo,
-    DateTimeOffset UpdatedAt
+    DateTimeOffset UpdatedAt,
+    int TaxYear
 )
 {
     public static TemplateSummaryResponse From(TemplateVersion v) =>
@@ -22,7 +23,8 @@ public sealed record TemplateSummaryResponse(
             v.Template.Description,
             v.Id.ToString(),
             v.VersionNo,
-            v.CreatedAt
+            v.CreatedAt,
+            v.TaxYear
         );
 }
 
@@ -34,7 +36,8 @@ public sealed record TemplateSchemaResponse(
     string TemplateVersionId,
     int VersionNo,
     JsonElement FieldSchema,
-    bool HasFile
+    bool HasFile,
+    int TaxYear
 )
 {
     public static TemplateSchemaResponse From(TemplateVersion v) =>
@@ -43,7 +46,8 @@ public sealed record TemplateSchemaResponse(
             v.Id.ToString(),
             v.VersionNo,
             JsonSerializer.Deserialize<JsonElement>(v.FieldSchema),
-            v.FileKey != null
+            v.FileKey != null,
+            v.TaxYear
         );
 }
 
@@ -53,17 +57,19 @@ public sealed record TemplateVersionResponse(
     string TemplateId,
     string TemplateVersionId,
     int VersionNo,
-    string Status
+    string Status,
+    int TaxYear
 )
 {
     public static TemplateVersionResponse From(TemplateVersion v) =>
-        new(v.TemplateId.ToString(), v.Id.ToString(), v.VersionNo, v.Status);
+        new(v.TemplateId.ToString(), v.Id.ToString(), v.VersionNo, v.Status, v.TaxYear);
 }
 
 /// <summary>A template in the admin list: its newest version (often a draft) and the version users see.</summary>
 /// <param name="LatestStatus">DRAFT, PUBLISHED or DEPRECATED.</param>
 /// <param name="PublishedVersionNo">The version users draft from; null while none is published.</param>
 /// <param name="UpdatedAt">When the newest version was started.</param>
+/// <param name="PublishedTaxYear">The tax year of the version users draft from; null while none is published.</param>
 public sealed record AdminTemplateSummaryResponse(
     string Id,
     string Code,
@@ -73,7 +79,8 @@ public sealed record AdminTemplateSummaryResponse(
     int LatestVersionNo,
     string LatestStatus,
     int? PublishedVersionNo,
-    DateTimeOffset UpdatedAt
+    DateTimeOffset UpdatedAt,
+    int? PublishedTaxYear
 )
 {
     public static AdminTemplateSummaryResponse From(Template t)
@@ -89,7 +96,8 @@ public sealed record AdminTemplateSummaryResponse(
             latest?.VersionNo ?? 0,
             latest?.Status ?? TemplateVersionStatus.Draft,
             published?.VersionNo,
-            latest?.CreatedAt ?? t.CreatedAt
+            latest?.CreatedAt ?? t.CreatedAt,
+            published?.TaxYear
         );
     }
 }
@@ -104,7 +112,8 @@ public sealed record AdminTemplateVersionResponse(
     string CreatedBy,
     DateTimeOffset CreatedAt,
     JsonElement FieldSchema,
-    bool HasFile
+    bool HasFile,
+    int TaxYear
 )
 {
     public static AdminTemplateVersionResponse From(TemplateVersion v) =>
@@ -115,7 +124,8 @@ public sealed record AdminTemplateVersionResponse(
             v.CreatedBy.ToString(),
             v.CreatedAt,
             JsonSerializer.Deserialize<JsonElement>(v.FieldSchema),
-            v.FileKey != null
+            v.FileKey != null,
+            v.TaxYear
         );
 }
 

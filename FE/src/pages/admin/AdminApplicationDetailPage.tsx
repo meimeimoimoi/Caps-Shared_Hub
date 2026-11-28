@@ -1,6 +1,6 @@
 import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
 import {
@@ -18,6 +18,7 @@ import {
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
+import { NextReviewBar } from '@/features/reviewer/NextReviewBar'
 import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
 import { EligibilityDecisionPanel } from '../../features/expert-vetting/components/EligibilityDecisionPanel'
@@ -64,6 +65,8 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const review = useApplicationReview(id)
   const { detail, status } = review
   const claim = useReviewClaim('GATE_1', id, detail?.claim)
+  // Set after concluding or releasing, to offer the next review in the reviewer workspace
+  const [handedOff, setHandedOff] = useState(false)
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
     { key: 'documents', label: t('admin:detail.tabs.documents') },
@@ -73,7 +76,8 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
     { key: 'history', label: t('admin:detail.tabs.history') },
   ] as const
   const [chosenTab, setTab] = useState<TabKey>()
-  const tab: TabKey = chosenTab ?? (detail?.screening ? 'ai' : 'profile')
+  // Reviewers start from the applicant's own record so the AI suggestion does not anchor the assessment
+  const tab: TabKey = chosenTab ?? (detail?.screening && !embedded ? 'ai' : 'profile')
   const [docKey, setDocKey] = useState<string>()
   const [confirming, setConfirming] = useState(false)
   const [toast, setToast] = useState<ToastContent | null>(null)
@@ -145,7 +149,10 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const releaseClaim = () =>
     void claim
       .release()
-      .then(() => setToast(t('admin:claim.released')))
+      .then(() => {
+        setHandedOff(true)
+        setToast(t('admin:claim.released'))
+      })
       .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
@@ -154,6 +161,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       .decide(note)
       .then(() => {
         setConfirming(false)
+        setHandedOff(true)
         setTab('history')
         setToast(t(`admin:${ELIGIBILITY_OUTCOME[outcome].toast}`))
       })
@@ -185,6 +193,11 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   }
 
   const blockers = [
+    // Reviewers see why the form is locked before anything else
+    detail.canDecide && !claim.heldByMe && {
+      text: t('admin:detail.blockers.notClaimed'),
+      tone: 'warning' as const,
+    },
     review.remaining > 0 && {
       text: t('admin:eligibility.remaining', { count: review.remaining }),
     },
@@ -255,11 +268,35 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             {jobTitle && <div><dt className="sr-only">{t('detail.meta.jobTitle')}</dt><dd className="inline">{jobTitle}</dd></div>}
             <div><dt className="sr-only">{t('detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
             <div><dt className="inline">{t('detail.meta.submitted')} </dt><dd className="inline tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
-            <div><dt className="inline">{t('reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
+            <div>
+              <dt className="inline">{t('reviewWorkspace.reference')} </dt>
+              <dd title={detail.id} className="inline-flex items-center gap-1 tabular-nums">
+                {detail.id.slice(0, 8)}
+                <button
+                  type="button"
+                  aria-label={t('detail.meta.copyReference')}
+                  title={t('detail.meta.copyReference')}
+                  onClick={() =>
+                    void navigator.clipboard
+                      .writeText(detail.id)
+                      .then(() => setToast(t('admin:detail.meta.referenceCopied')))
+                      .catch(() => setToast(t('admin:detail.meta.copyFailed')))
+                  }
+                  className="text-text-muted hover:text-text-strong focus-visible:ring-[var(--ui-border-strong)] inline-flex size-7 items-center justify-center rounded focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <Copy size={13} aria-hidden="true" />
+                </button>
+              </dd>
+            </div>
           </dl>
         </header>
       )}
 
+      {embedded && handedOff && (
+        <div className="mt-5">
+          <NextReviewBar currentId={detail.id} gate="GATE_1" />
+        </div>
+      )}
       <div className="mt-5">
         <ClaimBar
           current={claim.current}

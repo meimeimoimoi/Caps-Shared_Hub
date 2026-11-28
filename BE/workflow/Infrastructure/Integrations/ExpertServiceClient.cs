@@ -62,7 +62,8 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
             (short)offer.NoResponseRefundPercent,
             (short)offer.NoResponseExpertPercent,
             // An older expert service sends none: the agreed default
-            (short)(offer.NoDeliveryRefundPercent ?? 50)
+            (short)(offer.NoDeliveryRefundPercent ?? 50),
+            offer.ExpertEmail
         );
     }
 
@@ -129,6 +130,7 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
         int NoResponseRefundPercent,
         int NoResponseExpertPercent,
         int FreeSlots,
-        int? NoDeliveryRefundPercent
+        int? NoDeliveryRefundPercent,
+        string? ExpertEmail = null
     );
 }

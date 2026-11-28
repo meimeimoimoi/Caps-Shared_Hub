@@ -5,7 +5,8 @@ namespace Caps.Workflow.Domain.Review;
 /// holidays (the same day every year, written MM-dd) do not count, so a deadline that would fall on one moves to
 /// the next working day.
 /// </summary>
-/// <remarks>ponytail: lunar holidays (Tết, Hùng Kings) and substitute days off are out of scope.</remarks>
+/// <remarks>ponytail: lunar holidays (Tết, Hùng Kings) and substitute days off are out of scope; their dates
+/// change every year, so they need an admin screen to set them, not a config file.</remarks>
 public sealed class WorkCalendar(IEnumerable<string> holidays)
 {
     private static readonly TimeSpan LocalOffset = TimeSpan.FromHours(7);
@@ -35,6 +36,37 @@ public sealed class WorkCalendar(IEnumerable<string> holidays)
             day.ToDateTime(TimeOnly.FromDateTime(local.DateTime)),
             LocalOffset
         ).ToUniversalTime();
+    }
+
+    /// <summary>
+    /// `hours` later counting only the hours of working days, in UTC: 24 hours from Friday 17:00 ends Monday 17:00.
+    /// </summary>
+    public DateTimeOffset AddWorkingHours(DateTimeOffset from, int hours)
+    {
+        if (hours <= 0)
+        {
+            return from.ToUniversalTime();
+        }
+        var at = from.ToOffset(LocalOffset);
+        var left = TimeSpan.FromHours(hours);
+        while (true)
+        {
+            var day = DateOnly.FromDateTime(at.DateTime);
+            var nextMidnight = new DateTimeOffset(
+                day.AddDays(1).ToDateTime(TimeOnly.MinValue),
+                LocalOffset
+            );
+            if (IsWorkingDay(day))
+            {
+                var today = nextMidnight - at;
+                if (left <= today)
+                {
+                    return (at + left).ToUniversalTime();
+                }
+                left -= today;
+            }
+            at = nextMidnight;
+        }
     }
 
     // "09-02" -> (9, 2); a leap year accepts 02-29 as a day

@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { useEffect, useRef } from 'react'
 import {
   ArrowLeft,
@@ -76,16 +78,19 @@ export default function ExpertSettingsPage() {
     )
   if (!current)
     return (
-      <div className="ep-empty">
-        <h1>{t('settingsPageNotFound')}</h1>
-        <p>{t('chooseAnAvailableAccountSettingsSection')}</p>
-        <Link
-          className="ep-link"
-          to={{ pathname: '/expert/settings/account', search }}
-        >
-          {t('backToAccountSettings')}
-        </Link>
-      </div>
+      <EmptyState
+        title={t('settingsPageNotFound')}
+        actions={
+          <Link
+            className="ep-link"
+            to={{ pathname: '/expert/settings/account', search }}
+          >
+            {t('backToAccountSettings')}
+          </Link>
+        }
+      >
+        {t('chooseAnAvailableAccountSettingsSection')}
+      </EmptyState>
     )
   const data = context.data
   const status = statuses[data.accountStatus] ?? data.accountStatus
@@ -99,16 +104,11 @@ export default function ExpertSettingsPage() {
         <ArrowLeft size={15} aria-hidden="true" />
         {t('backToWorkspace')}
       </Link>
-      <div className="flex items-start justify-between gap-4 border-b border-[var(--ep-line)] pb-6">
-        <div>
-          <h1 className="text-[30px]! leading-tight! font-semibold!">
-            {t('settings')}
-          </h1>
-          <p className="mt-2 text-[14px] text-[var(--ep-muted)]">
-            {t('manageYourAccountInformationAndWorkspaceAccess')}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        className="border-b border-[var(--ep-line)] pb-6"
+        title={t('settings')}
+        help={t('manageYourAccountInformationAndWorkspaceAccess')}
+      />
       <div className="ep-settings-layout mt-6 grid grid-cols-[224px_minmax(0,_1fr)] items-start gap-8 max-[1101px]:grid-cols-[200px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[768px]:grid-cols-[minmax(0,_1fr)] max-[768px]:gap-5">
         <nav
           className="ep-settings-navigation pt-1 max-[768px]:flex max-[768px]:flex-wrap max-[768px]:gap-[6px] max-[768px]:p-0 [&_>_p]:max-w-[25ch] [&_>_p]:[padding:20px_12px] [&_>_p]:text-[12px] [&_>_p]:text-[var(--ep-muted)] max-[768px]:[&_>_p]:hidden"
@@ -254,9 +254,7 @@ export default function ExpertSettingsPage() {
                 </Link>
               </div>
               {data.services.length === 0 ? (
-                <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
-                  <p>{t('noServicesRegisteredForThisAccount')}</p>
-                </div>
+                <EmptyState title={t('noServicesRegisteredForThisAccount')} />
               ) : (
                 <ul className="ep-settings-services m-0 list-none p-0 [&_.ep-status]:shrink-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-4 [&_li]:[padding:20px_0] [&_li]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_li]:flex-col max-[768px]:[&_li]:items-start max-[768px]:[&_li]:gap-[10px] [&_li_p]:mt-[5px] [&_li_p]:text-[12px] [&_li_p]:text-[var(--ep-muted)] [&_li_strong]:text-[13px] [&_li_strong]:font-semibold">
                   {data.services.map((service) => (

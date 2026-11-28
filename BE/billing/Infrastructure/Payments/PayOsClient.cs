@@ -7,13 +7,78 @@ using Microsoft.Extensions.Logging;
 namespace Caps.Billing.Infrastructure.Payments;
 
 /// <summary>
-/// PayOS merchant API over plain HTTP (no SDK): creates payment links and verifies webhook signatures.
-/// Provider failures are logged here and surface as PAYMENT_UNAVAILABLE, without provider details.
+/// PayOS merchant API over plain HTTP (no SDK): creates and looks up payment links and verifies webhook
+/// signatures. Provider failures are logged here and surface as PAYMENT_UNAVAILABLE, without provider details.
 /// </summary>
 public sealed class PayOsClient(HttpClient http, PayOsOptions options, ILogger<PayOsClient> logger)
     : IPaymentGateway
 {
     private const string SuccessCode = "00";
+
+    /// <summary>Looks the order up by its code (GET v2/payment-requests/{orderCode}); PAID means fully paid.</summary>
+    /// <remarks>
+    /// shortcut: the body signature of the answer is not verified (TLS already authenticates PayOS, and it covers
+    /// JavaScript's JSON.stringify of the transactions); verify it if PayOS documents that form.
+    /// </remarks>
+    public async Task<PaymentNotice> FindPaymentAsync(long orderCode, CancellationToken ct)
+    {
+        if (!options.CanCreateLinks)
+            throw BillingErrors.PaymentUnavailable();
+
+        using var message = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"v2/payment-requests/{orderCode.ToString(System.Globalization.CultureInfo.InvariantCulture)}"
+        );
+        message.Headers.Add("x-client-id", options.ClientId);
+        message.Headers.Add("x-api-key", options.ApiKey);
+        try
+        {
+            using var response = await http.SendAsync(message, ct);
+            using var json = await JsonDocument.ParseAsync(
+                await response.Content.ReadAsStreamAsync(ct),
+                cancellationToken: ct
+            );
+            var root = json.RootElement;
+            var code =
+                root.ValueKind == JsonValueKind.Object && root.TryGetProperty("code", out var c)
+                    ? c.GetString()
+                    : null;
+            if (
+                !response.IsSuccessStatusCode
+                || code != SuccessCode
+                || !root.TryGetProperty("data", out var data)
+                || data.ValueKind != JsonValueKind.Object
+                || data.GetProperty("orderCode").GetInt64() != orderCode
+            )
+            {
+                logger.LogWarning(
+                    "PayOS lookup of order {OrderCode} gave no answer: HTTP {Status}, code {Code}",
+                    orderCode,
+                    (int)response.StatusCode,
+                    code
+                );
+                throw BillingErrors.PaymentUnavailable();
+            }
+            return new PaymentNotice(
+                orderCode,
+                data.GetProperty("amountPaid").GetInt64(),
+                data.GetProperty("status").GetString() == "PAID"
+            );
+        }
+        catch (Exception e)
+            when (e
+                    is HttpRequestException
+                        or TaskCanceledException
+                        or JsonException
+                        or KeyNotFoundException
+                        or InvalidOperationException
+                        or FormatException
+            )
+        {
+            logger.LogWarning(e, "PayOS lookup failed for order {OrderCode}", orderCode);
+            throw BillingErrors.PaymentUnavailable();
+        }
+    }
 
     public async Task<PaymentLink> CreateLinkAsync(PaymentLinkRequest request, CancellationToken ct)
     {

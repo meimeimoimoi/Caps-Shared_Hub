@@ -266,6 +266,10 @@
 .ep-status-paused { color: var(--ep-warning); background: var(--ep-warning-bg); }
 .ep-status-ready { color: var(--ep-success); background: var(--ep-success-bg); }
 .ep-status-neutral { color: var(--ep-muted); background: var(--ep-surface-raised); }
+.ep-status-info { color: var(--ui-info); background: var(--ui-info-soft); }
+.ep-status-accent { color: var(--ui-accent-text); background: var(--ui-accent-soft); }
+/* A coloured status carries a dot, so it reads at a glance down a list */
+.ep-status[class*='ep-status-']::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; flex-shrink: 0; }
 .ep-service-name { font-size: 12px; margin-top: 3px !important; }
 .ep-work-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin-top: 14px; }
 

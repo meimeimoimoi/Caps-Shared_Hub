@@ -107,6 +107,13 @@ public static class AuthErrors
             "A reason is required to lock an account."
         );
 
+    public static AppException AdminReasonTooShort(int minLength) =>
+        new(
+            ErrorType.Validation,
+            "ADMIN_REASON_TOO_SHORT",
+            $"The reason must be at least {minLength} characters."
+        );
+
     /// <summary>A password reset email only goes to an account that can sign in.</summary>
     public static AppException UserCannotSignIn() =>
         new(ErrorType.Conflict, "USER_CANNOT_SIGN_IN", "The account is locked.");

@@ -139,4 +139,44 @@ public sealed class UserTests
         Assert.Equal("INVALID_CREDENTIALS", other.Code);
         Assert.Equal("sub-1", user.GoogleSubject);
     }
+
+    [Theory]
+    [InlineData("short")]
+    [InlineData("  123456789  ")]
+    public void Suspend_rejects_a_reason_under_the_minimum_length(string reason)
+    {
+        var user = NewUser();
+
+        var error = Assert.Throws<AppException>(() => user.Suspend(Guid.NewGuid(), reason, Now));
+
+        Assert.Equal("ADMIN_REASON_TOO_SHORT", error.Code);
+        Assert.False(user.IsSuspended);
+    }
+
+    [Fact]
+    public void Reinstate_needs_a_reason_and_keeps_the_account_locked_without_one()
+    {
+        var user = NewUser();
+        user.Suspend(Guid.NewGuid(), "  Repeated spam reports  ", Now);
+        Assert.Equal("Repeated spam reports", user.SuspendedReason);
+
+        var error = Assert.Throws<AppException>(() => user.Reinstate("ok", Now));
+        Assert.Equal("ADMIN_REASON_TOO_SHORT", error.Code);
+        Assert.True(user.IsSuspended);
+
+        user.Reinstate("Appeal reviewed and accepted", Now);
+        Assert.False(user.IsSuspended);
+        Assert.Null(user.SuspendedReason);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    [InlineData("too short")]
+    public void Admin_action_reason_requires_ten_characters_after_trimming(string? reason)
+    {
+        var error = Assert.Throws<AppException>(() => AdminActionReason.Require(reason));
+
+        Assert.Equal("ADMIN_REASON_TOO_SHORT", error.Code);
+    }
 }

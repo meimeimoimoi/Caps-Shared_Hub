@@ -55,6 +55,20 @@ public sealed class ExpertNotificationPublisher(
                         )!;
                         await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
                     }
+                    else if (row.MessageType == nameof(PlatformFeeChangeAnnouncedEvent))
+                    {
+                        var message = JsonSerializer.Deserialize<PlatformFeeChangeAnnouncedEvent>(
+                            row.Payload
+                        )!;
+                        await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
+                    else if (row.MessageType == nameof(ExpertPriceOutOfRangeEvent))
+                    {
+                        var message = JsonSerializer.Deserialize<ExpertPriceOutOfRangeEvent>(
+                            row.Payload
+                        )!;
+                        await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
                     else if (row.MessageType == nameof(ExpertExcuseRequestedEvent))
                     {
                         var message = JsonSerializer.Deserialize<ExpertExcuseRequestedEvent>(

@@ -1,0 +1,263 @@
+import type { DOCUMENT_STATUS } from '@/lib/constants'
+import type {
+  DocumentDetail,
+  DocumentFailure,
+  DocumentReview,
+  KnowledgeDocument,
+  PipelineSummary,
+  ReviewArticle,
+} from '../types'
+
+/** A document version in ingestion's review queue (DocumentSummaryResponse) */
+export interface DocumentSummaryDto {
+  id: string
+  legalSourceId: string
+  documentNumber: string
+  docType: string
+  title: string
+  versionNo: number
+  source: string
+  status: string
+  issuedDate: string | null
+  effectiveFrom: string | null
+  hasContent: boolean
+  lastError: string | null
+  createdAt: string
+}
+
+/** One version for the split-screen review (DocumentPreviewResponse) */
+export interface DocumentPreviewDto {
+  id: string
+  documentNumber: string
+  docType: string
+  issuingAuthority: string | null
+  title: string
+  versionNo: number
+  source: string
+  status: string
+  issuedDate: string | null
+  effectiveFrom: string | null
+  approvedBy: string | null
+  approvedAt: string | null
+  rejectionReason: string | null
+  lastError: string | null
+  createdAt: string
+  contentJson: ContentJson | null
+  /** API path of the stored original (uploads only); needs the access token */
+  fileUrl: string | null
+  /** Page of a crawled document on its site */
+  sourceUrl: string | null
+  /** retire / reprocess: the reason an admin gave, with who and when */
+  metadata?: { retire?: AdminNote; reprocess?: AdminNote } | null
+}
+
+interface AdminNote {
+  reason: string
+  by: string
+  at: string
+}
+
+/** content_json written by the crawler parser (legal_parser.to_content_json) */
+interface ContentJson {
+  chapters?: {
+    number: string | null
+    title: string
+    articles: {
+      number: string
+      title: string
+      units: {
+        id: string
+        label: string
+        text: string
+        status: string
+        warning?: string
+        /** Ticked off the review checklist (POST /documents/{id}/reviewed-units) */
+        reviewed?: boolean
+      }[]
+    }[]
+  }[]
+}
+
+const UPLOAD = 'MANUAL_UPLOAD'
+
+/** Pipeline counts from GET /knowledge/stats (KnowledgePipelineResponse) */
+export interface KnowledgePipelineDto {
+  awaitingContent: number
+  awaitingReview: number
+  approved: number
+  indexed: number
+  parseFailed: number
+  indexFailed: number
+}
+
+const failure = (
+  d: DocumentSummaryDto,
+  kind: DocumentFailure['kind']
+): DocumentFailure => ({
+  kind,
+  title:
+    kind === 'INDEX_FAILED' ? 'Không index được' : 'Không bóc tách được',
+  message: d.lastError ?? '',
+  ref: d.id,
+  attempts: 1,
+  nextRetryAt: null,
+  previousVersion: d.versionNo > 1 ? `v${d.versionNo - 1}` : null,
+  log: [{ at: d.createdAt, text: d.lastError ?? '' }],
+})
+
+/** PENDING: in review once the worker has split it, parsing (or failed) before that.
+ * APPROVED / INDEX_FAILED sit in the index step; INDEXED and later states are indexed. */
+export function toKnowledgeDocument(d: DocumentSummaryDto): KnowledgeDocument {
+  const stage: KnowledgeDocument['stage'] =
+    d.status === 'PENDING'
+      ? d.hasContent
+        ? 'review'
+        : 'parse'
+      : d.status === 'APPROVED' || d.status === 'INDEX_FAILED'
+        ? 'index'
+        : 'indexed'
+  const failed =
+    d.status === 'INDEX_FAILED'
+      ? failure(d, 'INDEX_FAILED')
+      : d.status === 'PENDING' && d.lastError
+        ? failure(d, 'PARSE_FAILED')
+        : null
+  return {
+    id: d.id,
+    number: d.documentNumber,
+    title: d.title,
+    docType: d.docType,
+    source: d.source === UPLOAD ? 'UPLOAD' : 'CRAWL',
+    stage,
+    version: d.versionNo > 1 ? { no: d.versionNo, changed: true } : null,
+    parseWarnings: 0,
+    effectiveAt: d.effectiveFrom,
+    queuedAt: d.createdAt,
+    ...(failed ? { failure: failed } : {}),
+  }
+}
+
+export function toPipelineSummary(
+  p: KnowledgePipelineDto,
+  collectedThisMonth: number
+): PipelineSummary {
+  return {
+    collectedThisMonth,
+    parsing: p.awaitingContent,
+    pending: p.awaitingReview,
+    indexing: p.approved,
+    indexFailed: p.indexFailed,
+    parseFailed: p.parseFailed,
+    indexed: p.indexed,
+  }
+}
+
+const chapterTitle = (c: { number: string | null; title: string }) =>
+  c.number
+    ? `Chương ${c.number}${c.title ? ` · ${c.title}` : ''}`
+    : c.title || 'Không thuộc chương nào'
+
+function toChapters(content: ContentJson | null): DocumentReview['chapters'] {
+  return (content?.chapters ?? []).map((c, ci) => ({
+    title: chapterTitle(c),
+    articles: c.articles.map((a, ai): ReviewArticle => ({
+      // Article numbers repeat across chapters in amending documents, so the position makes the id
+      id: `a-${ci}-${ai}`,
+      // Old documents number sections in roman numerals: fall back to the position
+      number: Number.parseInt(a.number, 10) || ai + 1,
+      title: a.title,
+      units: a.units.map((u) => ({
+        id: u.id,
+        label: u.label,
+        text: u.text,
+        status: u.reviewed
+          ? 'REVIEWED'
+          : u.status === 'WARNING'
+            ? 'WARNING'
+            : 'AUTO',
+        ...(u.warning ? { warning: u.warning } : {}),
+      })),
+    })),
+  }))
+}
+
+/** null = the worker has not split the file yet */
+export function toDocumentReview(p: DocumentPreviewDto): DocumentReview | null {
+  if (!p.contentJson?.chapters) return null
+  return {
+    documentId: p.id,
+    sourceUrl: p.fileUrl ?? p.sourceUrl ?? '',
+    meta: {
+      number: p.documentNumber,
+      docType: p.docType,
+      issuer: p.issuingAuthority ?? '',
+      issuedAt: p.issuedDate ?? '',
+      effectiveAt: p.effectiveFrom ?? '',
+    },
+    title: p.title,
+    chapters: toChapters(p.contentJson),
+  }
+}
+
+const STATUS: Record<string, keyof typeof DOCUMENT_STATUS> = {
+  PENDING: 'PENDING_REVIEW',
+  APPROVED: 'APPROVED',
+  ARCHIVED: 'RETIRED',
+  EXPIRED: 'RETIRED',
+  REVOKED: 'RETIRED',
+  INDEXED: 'INDEXED',
+  INDEX_FAILED: 'INDEX_FAILED',
+  REJECTED: 'REJECTED',
+}
+
+/** shortcut: one version and no per-step times; the upload time stands in for the steps before review */
+export function toDocumentDetail(p: DocumentPreviewDto): DocumentDetail {
+  const indexed = p.status === 'INDEXED' ? p.approvedAt : null
+  return {
+    id: p.id,
+    number: p.documentNumber,
+    title: p.title,
+    docType: p.docType,
+    issuer: p.issuingAuthority ?? '',
+    currentVersion: p.versionNo,
+    timeline: [
+      p.createdAt,
+      p.createdAt,
+      p.contentJson ? p.createdAt : null,
+      p.approvedAt,
+      indexed,
+    ],
+    rag: null,
+    versions: [
+      {
+        no: p.versionNo,
+        collectedAt: p.createdAt,
+        source: p.source === UPLOAD ? 'UPLOAD' : 'CRAWL',
+        reviewer: p.approvedBy,
+        reviewedAt: p.approvedAt,
+        status:
+          p.status === 'PENDING' && p.lastError
+            ? 'PARSE_FAILED'
+            : (STATUS[p.status] ?? 'PENDING_REVIEW'),
+      },
+    ],
+    chunks: [],
+    chapters: toChapters(p.contentJson),
+    history: [
+      ...(p.rejectionReason
+        ? [
+            {
+              at: p.approvedAt ?? p.createdAt,
+              actor: p.approvedBy ?? '',
+              text: `Từ chối: ${p.rejectionReason}`,
+            },
+          ]
+        : []),
+      ...note(p.metadata?.retire, `Ngừng sử dụng v${p.versionNo}`),
+      ...note(p.metadata?.reprocess, 'Yêu cầu bóc tách lại'),
+    ].sort((a, b) => b.at.localeCompare(a.at)),
+  }
+}
+
+const note = (n: AdminNote | undefined, what: string) =>
+  n ? [{ at: n.at, actor: n.by, text: `${what}: ${n.reason}` }] : []

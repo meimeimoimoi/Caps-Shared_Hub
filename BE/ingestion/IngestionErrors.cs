@@ -38,6 +38,9 @@ public static class IngestionErrors
     public static AppException InvalidDocumentSource(string source) =>
         new(ErrorType.Validation, "INVALID_DOCUMENT_SOURCE", $"Unknown document source: {source}.");
 
+    public static AppException InvalidDocumentStatus(string status) =>
+        new(ErrorType.Validation, "INVALID_DOCUMENT_STATUS", $"Unknown document status: {status}.");
+
     public static AppException InvalidContentJson() =>
         new(ErrorType.Validation, "INVALID_CONTENT_JSON", "content_json must be a JSON object.");
 
@@ -63,6 +66,9 @@ public static class IngestionErrors
 
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document not found.");
+
+    public static AppException UnitNotFound() =>
+        new(ErrorType.NotFound, "UNIT_NOT_FOUND", "The document has no parsed unit with this id.");
 
     public static AppException DocumentFileNotStored() =>
         new(
@@ -130,6 +136,13 @@ public static class IngestionErrors
             ErrorType.Conflict,
             "DOCUMENT_NOT_INDEXED",
             "Document status lifecycle updates apply only to indexed documents."
+        );
+
+    public static AppException ReprocessUploadOnly() =>
+        new(
+            ErrorType.Conflict,
+            "REPROCESS_UPLOAD_ONLY",
+            "Only uploaded documents can be parsed again; crawled originals are not stored, crawl again instead."
         );
 
     public static AppException AiServiceUnavailable(string detail) =>

@@ -21,7 +21,7 @@ public sealed class PayOsController(ICurrentUser currentUser) : ControllerBase
     /// <remarks>
     /// The link expires after 15 minutes. Instead of opening checkoutUrl, the client can render qrCode (VietQR)
     /// with bankBin, accountNumber, accountName and transferNote in its own page, then poll
-    /// GET topups/{paymentId}. Credits are added only when PayOS confirms the payment through the webhook.
+    /// GET topups/{paymentId}. Credits are added only when PayOS confirms the payment (webhook or status poll).
     /// </remarks>
     /// <response code="200">The payment link.</response>
     /// <response code="400">Invalid input or INVALID_TOPUP_AMOUNT.</response>
@@ -42,7 +42,8 @@ public sealed class PayOsController(ICurrentUser currentUser) : ControllerBase
     /// <summary>Returns the status of one of the signed-in user's top-ups.</summary>
     /// <remarks>
     /// Poll every few seconds while the QR code is shown, until status is SUCCEEDED (then refresh the wallet) or
-    /// expiresAt has passed.
+    /// expiresAt has passed. While the top-up has not succeeded, billing also asks PayOS, so it is credited even
+    /// when the webhook is late or cannot reach the server; when PayOS is unreachable the stored status is returned.
     /// </remarks>
     /// <response code="200">The top-up status.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>

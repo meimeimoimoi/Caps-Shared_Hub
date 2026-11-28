@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, SearchX } from 'lucide-react'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
@@ -66,9 +67,7 @@ function DemoCasePage() {
   const scenario = isScenario(raw) ? raw : undefined
   const initial = demoCase(caseId, scenario)
 
-  useEffect(() => {
-    document.title = `${caseId ?? t('pageTitle')} | Shared Hub`
-  }, [caseId, t])
+  usePageTitle(caseId ?? t('pageTitle'))
 
   if (!initial)
     return (

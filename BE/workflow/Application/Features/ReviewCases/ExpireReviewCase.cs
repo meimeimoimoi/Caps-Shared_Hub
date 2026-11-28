@@ -20,7 +20,8 @@ public sealed class ExpireReviewCaseHandler(
     IExpertSlots slots,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<ExpireReviewCaseCommand>
 {
     public async Task HandleAsync(ExpireReviewCaseCommand command, CancellationToken ct)
@@ -32,7 +33,7 @@ public sealed class ExpireReviewCaseHandler(
             return;
         }
         var now = clock.GetUtcNow();
-        var history = reviewCase.ExpireIfOverdue(now);
+        var history = reviewCase.ExpireIfOverdue(now, calendar);
         if (history is null && reviewCase.Status == ReviewCaseStatus.AwaitingUserInformation)
         {
             var request = await infoRequests.FindOpenForUpdateAsync(reviewCase.Id, ct);

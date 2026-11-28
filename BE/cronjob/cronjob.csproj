@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>Caps.Cronjob</RootNamespace>
+    <UserSecretsId>caps-shared-hub-cronjob</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

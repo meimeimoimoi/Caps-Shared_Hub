@@ -10,6 +10,8 @@ class ScopeAnalysis(BaseModel):
     period_end: date | None
     needs_clarification: StrictBool
     clarification_msg: str | None = None
+    # Set by deterministic guardrails when a specific out-of-scope message applies.
+    out_of_scope_msg: str | None = None
 
     @model_validator(mode="after")
     def validate_period(self):

@@ -339,11 +339,6 @@ class CvExtractor:
     def extract(cls, content: bytes, evidence_type: str) -> CvExtractResponse:
         """Parse a Gate 1 CV file to text (directly or via OCR) and extract fields via LLM."""
         normalized_group = evidence_type.strip().upper()
-        if normalized_group != "CV":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only CV documents may be processed by AI.",
-            )
 
         kind = cls._detect_kind(content)
         if kind is None:

@@ -10,7 +10,8 @@ namespace Caps.Workflow.Api.Controllers;
 
 /// <summary>
 /// Files the client and the expert add to a review case: PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB each and
-/// 20 per case, while the review runs or a dispute is open. Only the two parties see them.
+/// 10 per party (client, expert), while the review runs or, in a dispute, until the evidence window ends. Only
+/// the two parties see them.
 /// </summary>
 [ApiController, Authorize, Route("api/v1/review-cases/{caseId:guid}/attachments")]
 public sealed class ReviewCaseAttachmentsController(ICurrentUser currentUser) : ControllerBase
@@ -75,5 +76,22 @@ public sealed class ReviewCaseAttachmentsController(ICurrentUser currentUser) : 
         Response.Headers.XContentTypeOptions = "nosniff";
         Response.Headers.CacheControl = "private, no-store";
         return File(file.Content, file.ContentType, file.FileName);
+    }
+
+    /// <summary>Removes a file the caller uploaded by mistake.</summary>
+    /// <remarks>Only the uploader, within 15 minutes of uploading, while the review runs and before any dispute.</remarks>
+    /// <response code="204">Removed.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or ATTACHMENT_NOT_FOUND.</response>
+    /// <response code="409">ATTACHMENT_NOT_REMOVABLE.</response>
+    [HttpDelete("{attachmentId:guid}")]
+    public async Task<IActionResult> Remove(
+        Guid caseId,
+        Guid attachmentId,
+        [FromServices] ICommandHandler<RemoveAttachmentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(new(UserId, caseId, attachmentId), ct);
+        return NoContent();
     }
 }

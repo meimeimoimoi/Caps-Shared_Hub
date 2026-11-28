@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Hand, LockKeyhole, Undo2, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/actions/button'
@@ -30,7 +30,13 @@ export function ClaimBar({
 }) {
   const { t } = useTranslation('admin')
   const format = useFormatters()
-  const [now] = useState(() => Date.now())
+  const [now, setNow] = useState(() => Date.now())
+  const [confirmRelease, setConfirmRelease] = useState(false)
+  // Refresh the time left every minute so an open tab never shows an expired hold as active
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
   if (!claimable && !current) return null
 
   const timeLeft = (iso: string) => {
@@ -77,10 +83,29 @@ export function ClaimBar({
           </span>
           {help}
         </p>
-        <Button size="sm" variant="outline" disabled={pending} onClick={onRelease}>
-          <Undo2 size={14} aria-hidden="true" />
-          {t('claim.release')}
-        </Button>
+        {confirmRelease ? (
+          <div role="group" aria-label={t('claim.releaseConfirm')} className="flex flex-wrap items-center gap-2">
+            <span className="text-text-strong text-sm">{t('claim.releaseConfirm')}</span>
+            <Button size="sm" variant="outline" disabled={pending} onClick={() => setConfirmRelease(false)}>
+              {t('claim.releaseCancel')}
+            </Button>
+            <Button
+              size="sm"
+              disabled={pending}
+              onClick={() => {
+                setConfirmRelease(false)
+                onRelease()
+              }}
+            >
+              {t('claim.release')}
+            </Button>
+          </div>
+        ) : (
+          <Button size="sm" variant="outline" disabled={pending} onClick={() => setConfirmRelease(true)}>
+            <Undo2 size={14} aria-hidden="true" />
+            {t('claim.release')}
+          </Button>
+        )}
       </div>
     )
   }

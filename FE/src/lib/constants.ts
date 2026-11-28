@@ -77,7 +77,7 @@ export const CASE_STATUS = {
   AWAITING_USER_INFORMATION: { label: 'Chờ bạn bổ sung', tone: 'warning' },
   AWAITING_ACCEPTANCE: { label: 'Chờ nghiệm thu', tone: 'warning' },
   DISPUTED: { label: 'Đang tranh chấp', tone: 'warning' },
-  RESOLVED: { label: 'Đã giải quyết tranh chấp', tone: 'neutral' },
+  RESOLVED: { label: 'Đã giải quyết tranh chấp', tone: 'success' },
   COMPLETED: { label: 'Hoàn tất', tone: 'success' },
   TERMINATED: { label: 'Đã chấm dứt', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
@@ -86,10 +86,10 @@ export const CASE_STATUS = {
 export const ESCROW_STATUS = {
   HELD: { label: 'Giữ · chờ nghiệm thu', tone: 'neutral' },
   DISPUTE_LOCKED: { label: 'Khóa · tranh chấp', tone: 'warning' },
-  // Settled; the expert payout runs 7 days after settlement (settlement.payout_hold_period)
-  PAYOUT_SCHEDULED: { label: 'Chờ chi trả · 7 ngày', tone: 'neutral' },
-  PAID: { label: 'Đã chi trả 80/20', tone: 'plain' },
-  REFUNDED: { label: 'Đã hoàn tiền', tone: 'plain' },
+  // Settled; the expert's share waits in a PENDING payout until it is sent
+  PAYOUT_SCHEDULED: { label: 'Chờ chi trả', tone: 'warning' },
+  PAID: { label: 'Đã chi trả 80/20', tone: 'success' },
+  REFUNDED: { label: 'Đã hoàn tiền', tone: 'success' },
   REFUND_PENDING: { label: 'Chờ hoàn tiền', tone: 'warning' },
   REFUND_FAILED: { label: 'Hoàn tiền lỗi', tone: 'danger' },
   PAYOUT_FAILED: { label: 'Chi trả lỗi · thử lại', tone: 'danger' },

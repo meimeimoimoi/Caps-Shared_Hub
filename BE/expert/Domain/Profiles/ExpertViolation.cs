@@ -76,7 +76,12 @@ public sealed class ExpertViolation
     /// The expert asks for a force-majeure excuse, once, within ViolationRules.RequestWithinDays of the violation,
     /// with up to ViolationRules.MaxExcuseFiles evidence files; the admin then excuses or declines.
     /// </summary>
-    public void RequestExcuse(string? reason, IReadOnlyList<ExcuseFile> files, DateTimeOffset now)
+    public void RequestExcuse(
+        string? reason,
+        IReadOnlyList<ExcuseFile> files,
+        int excusedInWindow,
+        DateTimeOffset now
+    )
     {
         if (ExcusedAt != null)
         {
@@ -89,6 +94,14 @@ public sealed class ExpertViolation
         if (now > OccurredAt.AddDays(ViolationRules.RequestWithinDays))
         {
             throw ExpertErrors.ViolationExcuseRequestClosed(ViolationRules.RequestWithinDays);
+        }
+        // No excuses left in the window: refuse now rather than leave the admin a request it can only decline
+        if (excusedInWindow >= ViolationRules.MaxExcuses)
+        {
+            throw ExpertErrors.ViolationExcuseLimit(
+                ViolationRules.MaxExcuses,
+                ViolationRules.WindowDays
+            );
         }
         if (files.Count > ViolationRules.MaxExcuseFiles)
         {

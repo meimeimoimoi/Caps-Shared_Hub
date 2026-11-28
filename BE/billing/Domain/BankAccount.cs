@@ -5,6 +5,8 @@ namespace Caps.Billing.Domain;
 /// <summary>An expert's payout bank account; the number is stored encrypted, plus a hash and the last 4 digits.</summary>
 public sealed class BankAccount
 {
+    public const int MaxRejectionReasonLength = 500;
+
     private BankAccount() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
@@ -17,16 +19,19 @@ public sealed class BankAccount
     public string AccountHolderName { get; private set; } = default!;
     public bool IsDefault { get; private set; }
 
-    // Set by the staff verification flow, which is not built yet
-    public string Status { get; } = BankAccountStatus.Unverified;
-    public string? RejectionReason { get; }
-    public Guid? VerifiedBy { get; }
-    public DateTimeOffset? VerifiedAt { get; }
+    /// <summary>Set once by staff review; payouts are only sent to VERIFIED accounts.</summary>
+    public string Status { get; private set; } = BankAccountStatus.Unverified;
+    public string? RejectionReason { get; private set; }
+
+    /// <summary>The staff member who reviewed the account and when, whether verified or rejected.</summary>
+    public Guid? VerifiedBy { get; private set; }
+    public DateTimeOffset? VerifiedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public bool IsDeleted => DeletedAt != null;
+    public bool IsVerified => Status == BankAccountStatus.Verified;
 
     /// <summary>
     /// Links a new account. The caller has already validated and protected the number
@@ -79,6 +84,34 @@ public sealed class BankAccount
         UpdatedAt = now;
     }
 
+    /// <summary>Staff confirmed the account belongs to the expert (holder name matches their registered name).</summary>
+    public void Verify(Guid staffId, DateTimeOffset now) =>
+        Review(staffId, BankAccountStatus.Verified, null, now);
+
+    /// <summary>Staff refused the account; the expert sees the reason and links another one.</summary>
+    public void Reject(Guid staffId, string? reason, DateTimeOffset now)
+    {
+        var trimmed = reason?.Trim();
+        if (string.IsNullOrEmpty(trimmed) || trimmed.Length > MaxRejectionReasonLength)
+            throw BillingErrors.InvalidBankAccount("reason");
+        Review(staffId, BankAccountStatus.Rejected, trimmed, now);
+    }
+
+    private void Review(Guid staffId, string status, string? reason, DateTimeOffset now)
+    {
+        EnsureActive();
+        // Separation of duties: staff who are also experts cannot approve their own payout account
+        if (staffId == UserId)
+            throw BillingErrors.BankAccountSelfReview();
+        if (Status != BankAccountStatus.Unverified)
+            throw BillingErrors.BankAccountAlreadyReviewed();
+        Status = status;
+        RejectionReason = reason;
+        VerifiedBy = staffId;
+        VerifiedAt = now;
+        UpdatedAt = now;
+    }
+
     private void EnsureActive()
     {
         if (IsDeleted)
@@ -96,4 +129,6 @@ public sealed record ProtectedAccountNumber(string Encrypted, string Hash, strin
 public static class BankAccountStatus
 {
     public const string Unverified = "UNVERIFIED";
+    public const string Verified = "VERIFIED";
+    public const string Rejected = "REJECTED";
 }

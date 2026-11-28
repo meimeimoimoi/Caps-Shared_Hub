@@ -47,7 +47,12 @@ public sealed class RequestExcuseHandler(
             ExcuseFile.Create(command.ReviewCaseId, u.FileName, u.Type, u.Content.Length)
         );
         var now = clock.GetUtcNow();
-        violation.RequestExcuse(command.Reason, files, now);
+        var excused = await violations.CountExcusedAsync(
+            profile.Id,
+            now.AddDays(-ViolationRules.WindowDays),
+            ct
+        );
+        violation.RequestExcuse(command.Reason, files, excused, now);
         foreach (var (file, upload) in files.Zip(uploads))
         {
             await storage.PutAsync(file.StorageKey, upload.Content, file.ContentType, ct);

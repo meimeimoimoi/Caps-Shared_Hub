@@ -19,7 +19,8 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
                 reviewCase.Fee,
                 reviewCase.TurnaroundHours,
                 reviewCase.ResponseDeadline,
-                clock.GetUtcNow()
+                clock.GetUtcNow(),
+                reviewCase.ExpertEmail
             ),
             reviewCase.Id,
             ct
@@ -86,6 +87,7 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
+        string? expertEmail,
         CancellationToken ct
     ) =>
         PublishAsync(
@@ -94,7 +96,8 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
                 reviewCaseId,
                 expertUserId,
                 responseDeadline,
-                clock.GetUtcNow()
+                clock.GetUtcNow(),
+                expertEmail
             ),
             reviewCaseId,
             ct
@@ -159,6 +162,24 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
                 clock.GetUtcNow()
             ),
             reviewCaseId,
+            ct
+        );
+
+    public Task DisputeExtendedAsync(
+        ReviewCase reviewCase,
+        ReviewDispute dispute,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseDisputeExtendedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                reviewCase.RequesterUserId,
+                reviewCase.ExpertUserId,
+                dispute.DecideBy,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
             ct
         );
 
@@ -231,6 +252,7 @@ public sealed class NoReviewCaseEvents : IReviewCaseEvents
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
+        string? expertEmail,
         CancellationToken ct
     ) => Task.CompletedTask;
 }

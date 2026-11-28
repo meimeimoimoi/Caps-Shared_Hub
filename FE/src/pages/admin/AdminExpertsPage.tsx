@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 // Compact toolbar filters, same look as the review assignments page.
 const filterCls =
@@ -246,7 +247,7 @@ export default function AdminExpertsPage() {
                   {experts.error ? (
                     <LoadError />
                   ) : (
-                    t('admin:experts.noResults')
+                    <EmptyState title={t('admin:experts.noResults')} />
                   )}
                 </td>
               </tr>

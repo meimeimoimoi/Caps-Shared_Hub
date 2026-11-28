@@ -9,9 +9,13 @@ import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { USER_STATUS } from '../constants'
+import { useOpenCases } from '../hooks/useUsers'
 import type { ManagedUser } from '../types'
 
 type Action = 'lock' | 'unlock' | 'reset'
+
+// Same minimum as the auth API and other audited admin changes, so every reason explains itself
+const MIN_REASON_LENGTH = 10
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -35,7 +39,7 @@ export function UserDrawer({
   isSelf: boolean
   onClose: () => void
   onLock: (locked: boolean, reason: string) => Promise<unknown>
-  onReset: () => Promise<unknown>
+  onReset: (reason: string) => Promise<unknown>
 }) {
   const { t } = useTranslation(['admin', 'common'])
   const [action, setAction] = useState<Action | null>(null)
@@ -51,15 +55,22 @@ export function UserDrawer({
     .join('')
     .toUpperCase()
   const locked = user.status === 'LOCKED'
+  // Locking someone in a running case leaves it hanging: say so before the admin confirms
+  const { data: open } = useOpenCases(user.id, action === 'lock')
+  const openTotal = open ? open.asClient + open.asExpert : 0
   const history = usePagination(user.history ?? [], user.id, 5)
 
   const run = () => {
-    if (action === 'lock' && !reason.trim())
-      return setError(t('users.action.lockReason'))
+    if (reason.trim().length < MIN_REASON_LENGTH)
+      return setError(
+        t('users.action.lockReasonMin', { count: MIN_REASON_LENGTH })
+      )
     setBusy(true)
     setError(null)
     const done =
-      action === 'reset' ? onReset() : onLock(action === 'lock', reason.trim())
+      action === 'reset'
+        ? onReset(reason.trim())
+        : onLock(action === 'lock', reason.trim())
     done
       .then(() => {
         setAction(null)
@@ -106,18 +117,34 @@ export function UserDrawer({
                     ? t('users.action.unlockBody')
                     : t('users.action.resetBody', { email: user.email })}
               </p>
+              {action === 'lock' && open && openTotal > 0 && (
+                <p
+                  role="alert"
+                  className="bg-warning-soft text-fg-strong rounded-control mt-3 px-3 py-2 text-sm"
+                >
+                  {t('users.action.lockOpenCases', {
+                    count: openTotal,
+                    asClient: open.asClient,
+                    asExpert: open.asExpert,
+                  })}
+                  {open.asExpert > 0 && ` ${t('users.action.lockOpenCasesExpert')}`}
+                </p>
+              )}
             </div>
-            {action === 'lock' && (
-              <FormField label={t('users.action.lockReason')} help={t('users.action.lockReasonHint')} className="!mb-0">
-                <textarea
-                  rows={2}
-                  maxLength={500}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="border-border-control rounded-control shadow-control bg-paper resize-y border px-3 py-2 text-base font-normal"
-                />
-              </FormField>
-            )}
+            {/* Every account action needs a reason; it goes to the audit trail */}
+            <FormField
+              label={t(`users.action.${action}Reason`)}
+              help={t(`users.action.${action}ReasonHint`)}
+              className="!mb-0"
+            >
+              <textarea
+                rows={2}
+                maxLength={500}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="border-border-control rounded-control shadow-control bg-paper resize-y border px-3 py-2 text-base font-normal"
+              />
+            </FormField>
             {error && (
               <p role="alert" className="text-danger text-sm">
                 {error}

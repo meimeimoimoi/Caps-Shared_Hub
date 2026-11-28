@@ -4,13 +4,13 @@ import { ExtensionForm, ExtensionStatus } from './CaseExtension'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
-import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { Toast } from '@/components/ui/feedback/toast'
+import { Modal } from '@/components/ui/feedback/modal'
 import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
-import { caseText, fieldClass, useCaseFormat } from '../ui'
-import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
+import { caseText, evidenceOpen, fieldClass, useCaseFormat } from '../ui'
+import { CaseAttachments } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
 import { RevisedContentView } from './RevisedContentView'
@@ -30,6 +30,9 @@ const CHAT_STATUSES = [
 const UPLOAD_STATUSES = [...CHAT_STATUSES, 'DISPUTED']
 
 /** A required text and one button; used for every action that needs the expert's words. */
+// Expert-side deadlines turn amber within the last 24 hours
+const DUE_SOON_MS = 24 * 60 * 60 * 1000
+
 function TextAction({
   label,
   submit,
@@ -143,6 +146,8 @@ function DeliverForm({
   ].filter((x): x is string => Boolean(x))
   const ready = missing.length === 0
   const [tried, setTried] = useState(false)
+  // Delivery goes through a confirmation step before it is sent
+  const [confirming, setConfirming] = useState(false)
   // Fields that were not text go back as JSON when they still parse
   const revised = () =>
     source &&
@@ -166,14 +171,8 @@ function DeliverForm({
       onSubmit={(e) => {
         e.preventDefault()
         setTried(true)
-        if (ready)
-          onSubmit(
-            result,
-            summary.trim(),
-            cannot ? reason.trim() : null,
-            citations,
-            revised()
-          )
+        // Delivery goes through a confirmation step before it is sent
+        if (ready) setConfirming(true)
       }}
     >
       <fieldset>
@@ -370,6 +369,64 @@ function DeliverForm({
           </button>
         )}
       </div>
+      {confirming && (
+        <Modal
+          title={t('live.expert.confirmDeliver.title')}
+          onClose={() => setConfirming(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                className="btn btn-press btn-secondary"
+                onClick={() => setConfirming(false)}
+              >
+                {t('live.expert.confirmDeliver.back')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                className="btn btn-press btn-primary disabled:opacity-60"
+                onClick={() => {
+                  setConfirming(false)
+                  onSubmit(
+                    result,
+                    summary.trim(),
+                    cannot ? reason.trim() : null,
+                    citations,
+                    revised()
+                  )
+                }}
+              >
+                {t('live.expert.deliver')}
+              </button>
+            </>
+          }
+        >
+          <p className="text-fg-strong text-sm">
+            {t('live.expert.confirmDeliver.body')}
+          </p>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt>{t('live.expert.result')}</dt>
+            <dd className="font-semibold">{t(`result.${result}`)}</dd>
+            {source && (
+              <>
+                <dt>{t('live.expert.confirmDeliver.edited')}</dt>
+                <dd className="num font-semibold">
+                  {
+                    Object.keys(fields).filter(
+                      (k) =>
+                        removed.includes(k) ||
+                        fields[k] !== fieldText(source[k])
+                    ).length
+                  }
+                </dd>
+              </>
+            )}
+            <dt>{t('live.expert.citations')}</dt>
+            <dd className="num font-semibold">{citations.length}</dd>
+          </dl>
+        </Modal>
+      )}
     </form>
   )
 }
@@ -413,9 +470,18 @@ export function ExpertLiveCase({
   const f = useCaseFormat()
   const { dto, dispute, view, isPending, isFetching, notFound, refetch } =
     useLiveCase(caseId)
+  // A decided dispute: rejected keeps the expert's share (green), upheld refunded the client from it (red)
+  const disputeOutcome =
+    dispute?.status === 'RESOLVED'
+      ? (dispute.refundPct ?? 0) > 0
+        ? ('upheld' as const)
+        : ('rejected' as const)
+      : null
   const { run, busy } = useCaseRun()
   const toMessage = useCaseError()
   const [toast, setToast] = useState<string | null>(null)
+  // Failed actions stay on screen until dismissed or the next action succeeds
+  const [actionError, setActionError] = useState<string | null>(null)
   const expire = useCallback(() => void refetch(), [refetch])
 
   if (isPending)
@@ -443,8 +509,11 @@ export function ExpertLiveCase({
 
   const perform = (action: () => Promise<unknown>, success = t('live.expert.saved')) =>
     run(action, {
-      onSuccess: () => setToast(success),
-      onError: (e) => setToast(toMessage(e)),
+      onSuccess: () => {
+        setActionError(null)
+        setToast(success)
+      },
+      onError: (e) => setActionError(toMessage(e)),
     })
   const a = reviewCaseActions
   const open = dto.infoRequests?.find((q) => q.status === 'OPEN')
@@ -495,6 +564,24 @@ export function ExpertLiveCase({
           {tr(`live.expert.status.${dto.status}`)}
         </span>
       </header>
+      {actionError && (
+        <div
+          role="alert"
+          className="border-danger bg-danger-soft text-danger mb-6 flex items-start justify-between gap-4 rounded border px-4 py-3 text-sm"
+        >
+          <p>
+            <span className="font-semibold">{t('live.expert.actionFailed')}</span>{' '}
+            {actionError}
+          </p>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="shrink-0 font-semibold underline underline-offset-2"
+          >
+            {t('live.expert.dismissError')}
+          </button>
+        </div>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">
@@ -513,6 +600,7 @@ export function ExpertLiveCase({
             {view.due?.response && (
               <Deadline
                 label={t('live.expert.responseDue')}
+                soonMs={DUE_SOON_MS}
                 dueAt={view.due.response}
                 onExpire={expire}
               />
@@ -520,6 +608,7 @@ export function ExpertLiveCase({
             {view.due?.delivery && (
               <Deadline
                 label={t('panel.IN_REVIEW.due')}
+                soonMs={DUE_SOON_MS}
                 dueAt={view.due.delivery}
                 onExpire={expire}
               />
@@ -554,7 +643,11 @@ export function ExpertLiveCase({
                 <summary className="text-fg-strong cursor-pointer text-sm font-semibold">
                   {t('live.expert.decline')}
                 </summary>
-                <div className="mt-3">
+                <div className="mt-3 space-y-3">
+                  {/* Matches workflow DeclineReviewHandler: case closes as declined, full refund, no violation */}
+                  <p className="text-fg-strong text-sm">
+                    {t('live.expert.declineEffect')}
+                  </p>
                   <TextAction
                     label={t('live.expert.declineReason')}
                     submit={t('live.expert.decline')}
@@ -727,7 +820,9 @@ export function ExpertLiveCase({
           )}
 
           {dispute && (
-            <Card title={t('panel.DISPUTED.title')}>
+            <Card
+              title={t(disputeOutcome ? 'panel.RESOLVED.title' : 'panel.DISPUTED.title')}
+            >
               <p className="text-fg-strong font-semibold">
                 {caseText(`dialogs.report.issues.${dispute.reason}`) ??
                   dispute.reason}
@@ -750,6 +845,7 @@ export function ExpertLiveCase({
                   <>
                     <Deadline
                       label={t('live.expert.statementDue')}
+                soonMs={DUE_SOON_MS}
                       dueAt={dispute.statementDueBy}
                       onExpire={expire}
                     />
@@ -772,17 +868,42 @@ export function ExpertLiveCase({
                 <p className="text-fg-muted text-sm">
                   {new Date(dispute.decideBy).getTime() < Date.now()
                     ? t('live.expert.decisionLate')
-                    : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}
+                    : t(dispute.extended ? 'panel.DISPUTED.decideByExtended' : 'panel.DISPUTED.decideBy', {
+                        at: f.at(dispute.decideBy),
+                      })}
                 </p>
               )}
-              {dto.status === 'DISPUTED' && (
-                // Evidence sits next to the statement so the arbiter can weigh it against the client's
-                <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
+              {/* Evidence sits under the dispute, apart from the files of the review itself */}
+              <CaseAttachments
+                bare
+                caseId={caseId}
+                since={dispute.openedAt}
+                requesterUserId={dto.requesterUserId}
+                canUpload={dto.status === 'DISPUTED' && evidenceOpen(dispute)}
+                uploadLabel={t('live.files.evidence.add')}
+              />
+              {dto.status === 'DISPUTED' && !evidenceOpen(dispute) && (
+                <p className="text-fg-muted text-sm">{t('live.files.evidence.closed')}</p>
               )}
-              {dispute.resolutionNote && (
-                <p className="text-fg break-words whitespace-pre-wrap">
-                  {dispute.resolutionNote}
-                </p>
+              {disputeOutcome && (
+                // Labelled like the statement above, so the decision is not read as one more remark
+                <div>
+                  <h3 className="eyebrow font-sans">{t('live.expert.decision')}</h3>
+                  <p
+                    className={cn(
+                      'mt-1 font-semibold',
+                      disputeOutcome === 'rejected' ? 'text-success' : 'text-danger'
+                    )}
+                  >
+                    {t(`settlement.dispute.${disputeOutcome}`)}
+                  </p>
+                  {dispute.resolutionNote && (
+                    <p className="text-fg mt-1 break-words whitespace-pre-wrap">
+                      <span className="text-fg-muted">{t('panel.RESOLVED.reason')}: </span>
+                      {dispute.resolutionNote}
+                    </p>
+                  )}
+                </div>
               )}
             </Card>
           )}
@@ -819,16 +940,41 @@ export function ExpertLiveCase({
               <dl className="mt-3 space-y-2">
                 <div className="flex justify-between gap-4">
                   <dt className="text-fg-muted">{t('settlement.expert')}</dt>
-                  <dd className="num text-fg-strong font-semibold">
+                  <dd
+                    className={cn(
+                      'num font-semibold',
+                      disputeOutcome === 'rejected'
+                        ? 'text-success'
+                        : disputeOutcome === 'upheld'
+                          ? 'text-danger'
+                          : 'text-fg-strong'
+                    )}
+                  >
                     {f.money(dto.settlement.expertAmount ?? 0)}
                   </dd>
                 </div>
               </dl>
+              {/* The colour alone does not say why; one line names the decision */}
+              {disputeOutcome && (
+                <p
+                  className={cn(
+                    'mt-2 text-xs',
+                    disputeOutcome === 'rejected' ? 'text-success' : 'text-danger'
+                  )}
+                >
+                  {t(`settlement.dispute.${disputeOutcome}`)}
+                </p>
+              )}
             </section>
           )}
           <CaseAttachments
             caseId={caseId}
-            canUpload={UPLOAD_STATUSES.includes(dto.status)}
+            until={dispute?.openedAt}
+            canUpload={UPLOAD_STATUSES.includes(dto.status) && dto.status !== 'DISPUTED'}
+            canRemove={UPLOAD_STATUSES.includes(dto.status) && dto.status !== 'DISPUTED'}
+            removeUntilDelivery={
+              dto.status === 'IN_REVIEW' || dto.status === 'AWAITING_USER_INFORMATION'
+            }
             requesterUserId={dto.requesterUserId}
             // A draft written in the app has content and no file; an unnamed upload keeps the generic button
             sourceFileName={dto.sourceContent ? null : (dto.sourceFileName ?? undefined)}

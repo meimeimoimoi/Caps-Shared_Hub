@@ -26,7 +26,8 @@ public sealed class GenerateDraftTests
             null,
             """[{"name":"revenue","type":"number","required":true}]""",
             Owner,
-            Now
+            Now,
+            2026
         );
         publishedVersion.Publish(null);
 
@@ -247,7 +248,8 @@ public sealed class GenerateDraftTests
             ]
             """,
             Owner,
-            Now
+            Now,
+            2026
         );
         publishedVersion.Publish(null);
 
@@ -307,7 +309,8 @@ public sealed class GenerateDraftTests
             null,
             """[{"id":"revenue","label":"Doanh thu","required":true}]""",
             Owner,
-            Now
+            Now,
+            2026
         );
         publishedVersion.Publish(null);
 
@@ -363,7 +366,8 @@ public sealed class GenerateDraftTests
             ]
             """,
             Owner,
-            Now
+            Now,
+            2026
         );
         publishedVersion.Publish(null);
 

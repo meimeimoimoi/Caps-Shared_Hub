@@ -9,6 +9,7 @@ import type { QualificationRow } from '../types'
 import { formatDate, waitedDays } from '../utils/applications'
 import { useFieldLabel } from '../hooks/useLabels'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 interface QualificationsTableProps {
   paged: Paged<QualificationRow>
@@ -156,7 +157,7 @@ export function QualificationsTable({
           {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
-                {empty ?? t('qualifications.empty')}
+                {empty ?? <EmptyState title={t('qualifications.empty')} />}
               </td>
             </tr>
           )}

@@ -15,6 +15,7 @@ import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPag
 import { useAuthStore } from '@/features/auth'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { getQualificationFile } from '../../features/expert-vetting/api/qualificationApi'
+import { NextReviewBar } from '@/features/reviewer/NextReviewBar'
 import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { CompetencyDecisionDialog } from '../../features/expert-vetting/components/CompetencyDecisionDialog'
 import { CompetencyResultCard } from '../../features/expert-vetting/components/CompetencyResultCard'
@@ -86,6 +87,8 @@ export default function AdminQualificationDetailPage({
   const review = useQualificationReview(id, scope)
   const userId = useAuthStore((s) => s.user?.id)
   const claim = useReviewClaim('GATE_2', id, review.detail?.claim)
+  // Set after concluding or releasing, to offer the next review in the reviewer workspace
+  const [handedOff, setHandedOff] = useState(false)
   const isApproval = scope === 'approval'
   const section = isApproval ? 'approvals' : 'competency'
   const listPath = isApproval
@@ -173,7 +176,10 @@ export default function AdminQualificationDetailPage({
   const releaseClaim = () =>
     void claim
       .release()
-      .then(() => setToast(t('admin:claim.released')))
+      .then(() => {
+        setHandedOff(true)
+        setToast(t('admin:claim.released'))
+      })
       .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
@@ -182,6 +188,7 @@ export default function AdminQualificationDetailPage({
       .decide(note)
       .then(() => {
         setConfirming(false)
+        setHandedOff(true)
         setTab('history')
         setToast(t(`admin:${COMPETENCY_OUTCOME[outcome].toast}`))
       })
@@ -268,6 +275,11 @@ export default function AdminQualificationDetailPage({
       />
       )}
 
+      {embedded && handedOff && (
+        <div className="mt-5">
+          <NextReviewBar currentId={detail.id} gate="GATE_2" />
+        </div>
+      )}
       {!isApproval && (
         <div className="mt-5">
           <ClaimBar
@@ -379,6 +391,7 @@ export default function AdminQualificationDetailPage({
               onShowDocument={showDocument}
               onConclude={() => setConfirming(true)}
               canConclude={review.canDecide && !readOnly}
+              lockedReason={readOnly ? t('admin:detail.blockers.notClaimed') : undefined}
             />
           </div>
         )}

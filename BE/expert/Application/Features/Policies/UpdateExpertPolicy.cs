@@ -30,7 +30,9 @@ public sealed class UpdateExpertPolicyHandler(
     IAuditTrail audit,
     ExpertPolicyOptions options,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IServiceOfferingRepository offerings,
+    IExpertNotificationOutbox outbox
 ) : ICommandHandler<UpdateExpertPolicyCommand, ExpertPolicyResponse>
 {
     public async Task<ExpertPolicyResponse> HandleAsync(
@@ -56,14 +58,15 @@ public sealed class UpdateExpertPolicyHandler(
             if (inForce != expected)
                 throw ExpertErrors.PolicyChanged(key);
         }
-        // A range minimum may not end up above its maximum, whichever side the change touched
-        var after = defaults.ToDictionary(
+        var before = defaults.ToDictionary(
             x => x.Key,
             x =>
                 stored.TryGetValue(x.Key, out var setting)
                     ? PolicySettingKeys.Clamp(x.Key, setting.Value)
                     : x.Value
         );
+        // A range minimum may not end up above its maximum, whichever side the change touched
+        var after = new Dictionary<string, int>(before);
         foreach (var (key, value) in command.Values)
             after[key] = value;
         PolicySettingKeys.EnsureOrdered(after);
@@ -93,6 +96,16 @@ public sealed class UpdateExpertPolicyHandler(
             settings.AddChange(first);
             RecordAudit(first, command.ActorUserId);
         }
+        // The new range applies at once: experts it leaves out are told now, not when bookings stop
+        await PriceRangeNotices.EnqueueAsync(
+            offerings,
+            outbox,
+            before,
+            after,
+            command.Reason,
+            now,
+            ct
+        );
         try
         {
             await unitOfWork.SaveChangesAsync(ct);

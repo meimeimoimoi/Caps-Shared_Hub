@@ -26,7 +26,22 @@ public sealed class RequestReviewTests
     }
 
     [Fact]
-    public async Task A_second_open_booking_of_the_version_with_the_expert_is_a_conflict()
+    public async Task A_document_with_an_open_case_is_not_booked_again_whatever_the_version()
+    {
+        var cases = new FakeCases();
+
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            Handler(cases, new FakeUnitOfWork(), documentHasOpenCase: true)
+                .HandleAsync(Command(), default)
+        );
+
+        Assert.Equal("REVIEW_CASE_ALREADY_OPEN", e.Code);
+        Assert.Equal(ErrorType.Conflict, e.Type);
+        Assert.Empty(cases.Added);
+    }
+
+    [Fact]
+    public async Task The_same_version_booked_twice_at_once_is_a_conflict()
     {
         var e = await Assert.ThrowsAsync<AppException>(() =>
             Handler(new FakeCases(), new FakeUnitOfWork(duplicate: true))
@@ -73,8 +88,36 @@ public sealed class RequestReviewTests
             null
         );
 
-    private static RequestReviewHandler Handler(FakeCases cases, FakeUnitOfWork unitOfWork) =>
-        new(new FakeDocuments(), new FakeOfferings(), cases, unitOfWork, TimeProvider.System);
+    private static RequestReviewHandler Handler(
+        FakeCases cases,
+        FakeUnitOfWork unitOfWork,
+        bool documentHasOpenCase = false
+    ) =>
+        new(
+            new FakeDocuments(),
+            new FakeOfferings(),
+            cases,
+            new FakeOpenCases(documentHasOpenCase),
+            unitOfWork,
+            TimeProvider.System
+        );
+
+    // Only the booking check is used here
+    private sealed class FakeOpenCases(bool open) : IReviewCaseLookup
+    {
+        public Task<bool> HasOpenCaseForUpdateAsync(Guid documentId, CancellationToken ct) =>
+            Task.FromResult(open);
+
+        public Task<IReadOnlyList<ReviewCase>> ListByIdsAsync(
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(
+            Guid userId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+    }
 
     private sealed class FakeDocuments : IDocumentRepository
     {
@@ -117,7 +160,7 @@ public sealed class RequestReviewTests
     private sealed class FakeUnitOfWork(bool duplicate = false) : IUnitOfWork
     {
         public Task<ITransaction> BeginTransactionAsync(CancellationToken ct) =>
-            throw new NotSupportedException();
+            Task.FromResult<ITransaction>(new FakeTransaction());
 
         public Task SaveChangesAsync(CancellationToken ct) =>
             duplicate
@@ -149,5 +192,12 @@ public sealed class RequestReviewTests
             Guid userId,
             CancellationToken ct
         ) => throw new NotSupportedException();
+    }
+
+    private sealed class FakeTransaction : ITransaction
+    {
+        public Task CommitAsync(CancellationToken ct) => Task.CompletedTask;
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

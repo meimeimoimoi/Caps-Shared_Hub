@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Ingestion.Features.CrawlJobs;
 
-/// <summary>An admin starts a crawl of the given sources.</summary>
+/// <summary>An admin (or the monthly schedule, with no user) starts a crawl of the given sources.</summary>
 public sealed record TriggerCrawlCommand(
-    Guid UserId,
+    Guid? UserId,
     IReadOnlyList<string> Sources,
     int? TopN,
     bool All
@@ -31,7 +31,7 @@ public sealed class TriggerCrawlHandler(
 ) : ICommandHandler<TriggerCrawlCommand, CrawlJobResponse>
 {
     private static readonly string[] KnownSources = ["vbpl", "mof"];
-    private static readonly TimeSpan LostAfter = TimeSpan.FromHours(12);
+    public static readonly TimeSpan LostAfter = TimeSpan.FromHours(12);
 
     public async Task<CrawlJobResponse> HandleAsync(
         TriggerCrawlCommand command,
@@ -67,7 +67,9 @@ public sealed class TriggerCrawlHandler(
 
         var job = new CrawlJob
         {
-            TriggerType = CrawlTriggerTypes.Manual,
+            TriggerType = command.UserId is null
+                ? CrawlTriggerTypes.Scheduled
+                : CrawlTriggerTypes.Manual,
             TriggeredBy = command.UserId,
             Status = CrawlJobStatuses.Running,
             Detail = JsonSerializer.Serialize(

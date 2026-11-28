@@ -7,4 +7,7 @@ public interface IAccountNumberProtector
 {
     /// <summary>Expects a number normalized by <see cref="BankAccountRules.NormalizeAccountNumber"/>.</summary>
     ProtectedAccountNumber Protect(string normalizedNumber);
+
+    /// <summary>The clear number of <see cref="ProtectedAccountNumber.Encrypted"/>, only to send a transfer.</summary>
+    string Reveal(string encrypted);
 }

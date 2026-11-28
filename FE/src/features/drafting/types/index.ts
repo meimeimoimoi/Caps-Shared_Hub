@@ -60,6 +60,8 @@ export interface GenerationJob {
 export interface DraftIssue {
   id: string
   severity: 'blocking' | 'warning'
+  /** BE issue category (GROUNDING_ISSUE, NUMERICAL_INTEGRITY…); absent in demo data */
+  type?: string
   message: string
   guidance: string
   fieldId?: string

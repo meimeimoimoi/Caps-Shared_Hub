@@ -44,6 +44,14 @@ export async function getMyViolations(signal?: AbortSignal) {
   return (await api.get<Envelope<ExpertViolations>>(VIOLATIONS, { signal })).data
 }
 
+/** One evidence file the expert sent with an excuse request, as a blob the page opens */
+export async function getMyExcuseFile(reviewCaseId: string, fileId: string) {
+  return api.get<Blob>(`${VIOLATIONS}/${reviewCaseId}/files/${fileId}`, {
+    responseType: 'blob',
+    timeout: 60_000,
+  })
+}
+
 /** Asks the admin to excuse one violation for force majeure (once, within 2 days of it), with evidence files */
 export async function requestExcuse(reviewCaseId: string, reason: string, files: File[]) {
   const form = new FormData()

@@ -1,8 +1,8 @@
 namespace Caps.Billing.Infrastructure.Payments;
 
 /// <summary>
-/// PayOS merchant channel ("PayOS" section). The three keys come from user-secrets or the environment, never from
-/// appsettings; without them billing still starts and payments answer PAYMENT_UNAVAILABLE.
+/// PayOS merchant channel ("PayOS" section). The keys come from user-secrets or the environment, never from
+/// appsettings; without them billing still starts and payments and payouts answer PAYMENT_UNAVAILABLE.
 /// </summary>
 public sealed class PayOsOptions
 {
@@ -25,4 +25,16 @@ public sealed class PayOsOptions
         && !string.IsNullOrEmpty(CancelUrl);
 
     public bool CanVerifyNotices => !string.IsNullOrEmpty(ChecksumKey);
+
+    /// <summary>The payout (chi hộ) channel has its own three keys in the PayOS dashboard.</summary>
+    public string PayoutClientId { get; init; } = "";
+    public string PayoutApiKey { get; init; } = "";
+
+    /// <summary>Signs payout requests (x-signature header).</summary>
+    public string PayoutChecksumKey { get; init; } = "";
+
+    public bool CanSendPayouts =>
+        !string.IsNullOrEmpty(PayoutClientId)
+        && !string.IsNullOrEmpty(PayoutApiKey)
+        && !string.IsNullOrEmpty(PayoutChecksumKey);
 }

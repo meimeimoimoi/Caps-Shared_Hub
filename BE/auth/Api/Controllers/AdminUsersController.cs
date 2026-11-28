@@ -42,7 +42,7 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
     /// <summary>Locks an account so it can no longer sign in.</summary>
     /// <remarks>Every session of the account ends at once. An admin cannot lock their own account.</remarks>
     /// <response code="200">The account, now SUSPENDED.</response>
-    /// <response code="400">SUSPEND_REASON_REQUIRED or invalid input.</response>
+    /// <response code="400">SUSPEND_REASON_REQUIRED, ADMIN_REASON_TOO_SHORT (under 10 characters) or invalid input.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>
     /// <response code="403">Missing the UserManage permission.</response>
     /// <response code="404">USER_NOT_FOUND.</response>
@@ -61,9 +61,13 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
         return Ok(ApiResponse<ManagedUserResponse>.Ok(user));
     }
 
-    /// <summary>Unlocks a locked account.</summary>
-    /// <remarks>The account returns to ACTIVE, or to PENDING_VERIFICATION if its email was never verified.</remarks>
+    /// <summary>Unlocks a locked account, giving the reason.</summary>
+    /// <remarks>
+    /// The account returns to ACTIVE, or to PENDING_VERIFICATION if its email was never verified. The reason
+    /// (at least 10 characters) is kept in the audit trail.
+    /// </remarks>
     /// <response code="200">The account with its status before the lock.</response>
+    /// <response code="400">ADMIN_REASON_TOO_SHORT or invalid input.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>
     /// <response code="403">Missing the UserManage permission.</response>
     /// <response code="404">USER_NOT_FOUND.</response>
@@ -72,17 +76,22 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
     [HttpPost("{id:guid}/unlock"), RequireSessionCheck]
     public async Task<IActionResult> Unlock(
         Guid id,
+        ReinstateUserRequest r,
         [FromServices] ICommandHandler<ReinstateUserCommand, ManagedUserResponse> handler,
         CancellationToken ct
     )
     {
-        var user = await handler.HandleAsync(new(UserId, id), ct);
+        var user = await handler.HandleAsync(new(UserId, id, r.Reason), ct);
         return Ok(ApiResponse<ManagedUserResponse>.Ok(user));
     }
 
-    /// <summary>Sends the account a password reset email.</summary>
-    /// <remarks>The same email as "forgot password"; the admin never sees or sets the password.</remarks>
+    /// <summary>Sends the account a password reset email, giving the reason.</summary>
+    /// <remarks>
+    /// The same email as "forgot password"; the admin never sees or sets the password. The reason (at least
+    /// 10 characters) is kept in the audit trail.
+    /// </remarks>
     /// <response code="204">The email was queued.</response>
+    /// <response code="400">ADMIN_REASON_TOO_SHORT or invalid input.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>
     /// <response code="403">Missing the UserManage permission.</response>
     /// <response code="404">USER_NOT_FOUND.</response>
@@ -92,11 +101,12 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
     [HttpPost("{id:guid}/password-reset"), RequireSessionCheck]
     public async Task<IActionResult> SendPasswordReset(
         Guid id,
+        SendUserPasswordResetRequest r,
         [FromServices] ICommandHandler<SendUserPasswordResetCommand> handler,
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(UserId, id), ct);
+        await handler.HandleAsync(new(UserId, id, r.Reason), ct);
         return NoContent();
     }
 }

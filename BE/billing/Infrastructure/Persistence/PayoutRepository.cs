@@ -32,6 +32,13 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
     public Task<int> CountAsync(string? status, CancellationToken ct) =>
         Filter(status).CountAsync(ct);
 
+    public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
+        db
+            .PayoutTransactions.FromSqlInterpolated(
+                $"SELECT * FROM billing.payout_transaction WHERE id = {id} FOR UPDATE"
+            )
+            .SingleOrDefaultAsync(ct);
+
     private IQueryable<PayoutTransaction> Filter(string? status) =>
         status == null
             ? db.PayoutTransactions.AsNoTracking()

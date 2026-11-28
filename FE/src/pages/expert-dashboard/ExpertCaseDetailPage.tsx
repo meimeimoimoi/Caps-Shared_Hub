@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { statusTone } from '@/features/expert-dashboard/statusTone'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import './case-detail.css'
@@ -110,7 +112,7 @@ function CaseWorkspace({
             {item.id} · {clients[item.id] ?? t('sampleClient')}
           </p>
         </div>
-        <span className="ep-status">
+        <span className={`ep-status ${ws.closed || ws.accepted ? '' : statusTone(ws.status)}`}>
           {ws.closed
             ? t('declinedInPreview')
             : ws.accepted
@@ -216,9 +218,7 @@ function CaseWorkspace({
                       {t('responseDeadline')}
                     </span>
                     <span className="mt-[2px] block font-medium">
-                      <time dateTime={item.deadline.at ?? undefined}>
-                        {display.deadline(item.deadline.at, timezone)}
-                      </time>
+                      <DeadlineTime deadline={item.deadline} timezone={timezone} />
                     </span>
                   </div>
                 </div>
@@ -341,6 +341,10 @@ function CaseWorkspace({
                       >
                         {t('reasonForDeclining')}
                       </label>
+                      {/* Matches workflow DeclineReviewHandler: case closes as declined, full refund, no violation */}
+                      <p className="text-[14px] text-[var(--ep-ink)]">
+                        {t('declineEffect')}
+                      </p>
                       <textarea
                         id="decline-reason"
                         className="min-h-25 w-full resize-y rounded-xl bg-[var(--ep-surface)] bg-none [padding:16px] [font-family:inherit] text-[15px] text-[var(--ep-ink)] [caret-color:var(--ep-accent)] transition-colors outline-none [border:2px_solid_var(--ep-line)] placeholder:text-[var(--ep-muted)] focus:[border-color:var(--ep-accent)]"
@@ -507,9 +511,7 @@ function CaseWorkspace({
                   {t('caseDeadline')}
                 </div>
                 <p className="mt-2! text-[14px]">
-                  <time dateTime={item.deadline.at ?? undefined}>
-                    {display.deadline(item.deadline.at, timezone)}
-                  </time>
+                  <DeadlineTime deadline={item.deadline} timezone={timezone} />
                 </p>
                 <p className="mt-1! text-[13px]">{timezone}</p>
                 <p className="mt-4! text-[13px] leading-relaxed">
@@ -527,7 +529,7 @@ function CaseWorkspace({
           className={`ep-case-workspace grid items-start gap-6 max-[1101px]:gap-4 max-[768px]:grid-cols-[1fr] ${ws.currentStep >= 3 ? 'grid-cols-[260px_minmax(0,_1fr)] max-[1101px]:grid-cols-[220px_minmax(0,_1fr)]' : 'grid-cols-[minmax(0,_1fr)_340px] max-[1000px]:grid-cols-[minmax(0,_1fr)_300px]'}`}
         >
           {ws.currentStep >= 3 && (
-            <aside className="ep-case-task-list sticky top-6 max-[768px]:static [&_.ep-case-sla]:mt-6 [&_.ep-case-sla]:flex [&_.ep-case-sla]:items-start [&_.ep-case-sla]:gap-2 [&_.ep-case-sla]:pt-[18px] [&_.ep-case-sla]:[border-top:1px_solid_var(--ep-line)] max-[768px]:[&_.ep-case-sla]:mt-3 [&_>_p]:[margin:8px_0_18px] [&_>_p]:text-[12px] [&_nav]:flex [&_nav]:flex-col [&_nav]:gap-1 max-[768px]:[&_nav]:grid max-[768px]:[&_nav]:grid-cols-[1fr_1fr] max-[401px]:[&_nav]:grid-cols-[1fr] [&_nav_button]:flex [&_nav_button]:w-full [&_nav_button]:items-center [&_nav_button]:gap-[10px] [&_nav_button]:rounded-lg [&_nav_button]:border-0 [&_nav_button]:[padding:13px_12px] [&_nav_button]:text-left [&_nav_button]:[font-family:inherit] [&_nav_button]:text-[var(--ep-muted)] [&_nav_button]:[background:transparent] [&_nav_button_>_span]:flex-1 [&_nav_button:hover]:bg-[var(--ep-surface-raised)] [&_nav_button:hover]:bg-none [&_nav_button[aria-current=true]]:bg-[var(--ep-accent-glow)] [&_nav_button[aria-current=true]]:bg-none [&_nav_button[aria-current=true]]:font-semibold [&_nav_button[aria-current=true]]:text-[var(--ep-accent-text)]">
+            <aside className="ep-case-task-list">
               <h2>{t('professionalReview')}</h2>
               <p>
                 {t('caseProgressCount', {
@@ -888,5 +890,45 @@ export function ExpertCaseDetailPage() {
       returnTo={returnTo}
       returnLabel={returnLabel}
     />
+  )
+}
+
+const DUE_SOON_MS = 24 * 60 * 60 * 1000
+
+/** Deadline text: red "Overdue" from the server flag, amber "Due soon" within 24 hours */
+function DeadlineTime({
+  deadline,
+  timezone,
+}: {
+  deadline: { at: string | null; overdue: boolean; paused?: boolean }
+  timezone: string
+}) {
+  const { t } = useTranslation('expert')
+  const display = useExpertPresentation()
+  // Current time kept in state and refreshed every minute, never read during render
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(id)
+  }, [])
+  const due = deadline.at ? Date.parse(deadline.at) : NaN
+  const dueSoon =
+    !deadline.overdue &&
+    !deadline.paused &&
+    Number.isFinite(due) &&
+    due > now &&
+    due - now <= DUE_SOON_MS
+  const tone = deadline.overdue
+    ? 'font-semibold text-[var(--ep-danger)]'
+    : dueSoon
+      ? 'font-semibold text-[var(--ep-warning)]'
+      : undefined
+  return (
+    <span className={tone}>
+      <time dateTime={deadline.at ?? undefined}>
+        {display.deadline(deadline.at, timezone)}
+      </time>
+      {deadline.overdue ? <> · {t('overdue')}</> : dueSoon && <> · {t('dueSoon')}</>}
+    </span>
   )
 }

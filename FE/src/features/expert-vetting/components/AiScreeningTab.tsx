@@ -120,7 +120,7 @@ export function AiScreeningTab({
               <HelpTip label={t('detail.aiScreening.helpLabel')}>
                 {t('detail.aiScreening.help')}
               </HelpTip>
-              <span className="badge-ai">AI</span>
+              <span className="badge-ai">{t('detail.aiScreening.suggestionBadge')}</span>
               <span
                 className={cn(
                   'rounded-full px-2.5 py-0.5 text-xs font-semibold',

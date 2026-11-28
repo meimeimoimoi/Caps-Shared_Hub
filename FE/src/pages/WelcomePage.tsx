@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -25,9 +26,7 @@ type WelcomeState = { welcome?: boolean; from?: unknown; fromState?: unknown } |
  * application goes straight to it; opening the page directly goes to the account's own area. */
 export default function WelcomePage() {
   const { t } = useTranslation('auth')
-  useEffect(() => {
-    document.title = `${t('roleChoice.welcomeTitle')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('roleChoice.welcomeTitle'))
   const navigate = useNavigate()
   const state = useLocation().state as WelcomeState
   const [check, setCheck] = useState<'checking' | 'ask' | 'expert' | 'failed'>(

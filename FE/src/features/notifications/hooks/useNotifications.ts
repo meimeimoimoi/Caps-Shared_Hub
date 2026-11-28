@@ -146,6 +146,25 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    // The admin took the one extension: the decision is now due later
+    if (n.type === 'REVIEW_CASE_DISPUTE_EXTENDED')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.disputeExtended', {
+          at:
+            typeof n.data.decideBy === 'string'
+              ? new Date(n.data.decideBy).toLocaleString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })
+              : '',
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+        read: n.readAt != null,
+      }
     // The admin has not decided a dispute by its deadline; the fee stays held
     if (n.type === 'REVIEW_CASE_DISPUTE_OVERDUE')
       return {
@@ -155,6 +174,17 @@ export function useNotifications() {
         tone: 'warning',
         read: n.readAt != null,
       }
+    // A case counted against the expert; points by kind as in ViolationRules (late 1, withdrew 2, never delivered 3)
+    if (n.type === 'EXPERT_VIOLATION_RECORDED') {
+      const kind = n.data.kind === 'WITHDREW' || n.data.kind === 'NO_DELIVERY' ? n.data.kind : 'LATE'
+      return {
+        id: n.id,
+        text: t(`notifications.violation.${kind}`),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/availability',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    }
     // The expert's dispute statement window ends in a few hours
     if (n.type === 'REVIEW_CASE_STATEMENT_DUE')
       return {
@@ -224,6 +254,47 @@ export function useNotifications() {
       }
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
     if (n.type === 'EXPERT_SERVICE_ACCESS_CHANGED') return accessItem(n)
+    if (n.type === 'EXPERT_PRICE_OUT_OF_RANGE')
+      return {
+        id: n.id,
+        text: t('notifications.priceOutOfRange', {
+          service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+          min: Number(n.data.minFee).toLocaleString('vi-VN'),
+          max: Number(n.data.maxFee).toLocaleString('vi-VN'),
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/services',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    if (
+      n.type === 'PLATFORM_FEE_CHANGE_ANNOUNCED' ||
+      n.type === 'PLATFORM_FEE_CHANGE_CANCELLED'
+    ) {
+      const announced = n.type === 'PLATFORM_FEE_CHANGE_ANNOUNCED'
+      return {
+        id: n.id,
+        text: t(
+          announced
+            ? 'notifications.platformFee.announced'
+            : 'notifications.platformFee.cancelled',
+          {
+            service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+            from: n.data.currentPercent,
+            to: n.data.newPercent,
+            // The effective day starts at 00:00 Vietnam time, stored in UTC
+            date:
+              typeof n.data.effectiveFrom === 'string'
+                ? new Date(n.data.effectiveFrom).toLocaleDateString('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                  })
+                : '',
+          }
+        ),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/services',
+        tone: announced ? 'warning' : undefined,
+        read: n.readAt != null,
+      }
+    }
     if (n.type !== 'EXPERT_ELIGIBILITY_DECIDED') return null
     const outcome = n.data.outcome as keyof typeof outcomes
     if (!(outcome in outcomes)) return null

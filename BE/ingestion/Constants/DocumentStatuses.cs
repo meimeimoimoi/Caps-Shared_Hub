@@ -12,6 +12,18 @@ public static class DocumentStatuses
     public const string Revoked = "REVOKED";
     public const string Archived = "ARCHIVED";
 
+    public static readonly string[] All =
+    [
+        Pending,
+        Approved,
+        Rejected,
+        Indexed,
+        IndexFailed,
+        Expired,
+        Revoked,
+        Archived,
+    ];
+
     public static bool HasVectorLifecycle(string status) =>
         status is Indexed or Expired or Revoked or Archived;
 }

@@ -66,5 +66,52 @@ public sealed class BankAccountTests
 
         Assert.Equal("BANK_ACCOUNT_NOT_FOUND", Errors.CodeOf(() => account.Delete(Now)));
         Assert.Equal("BANK_ACCOUNT_NOT_FOUND", Errors.CodeOf(() => account.MakeDefault(Now)));
+        Assert.Equal(
+            "BANK_ACCOUNT_NOT_FOUND",
+            Errors.CodeOf(() => account.Verify(Guid.NewGuid(), Now))
+        );
     }
+
+    [Fact]
+    public void Staff_review_is_a_single_decision_recorded_with_who_and_when()
+    {
+        var staff = Guid.NewGuid();
+        var later = Now.AddHours(1);
+        var verified = Register(isDefault: true);
+        verified.Verify(staff, later);
+
+        Assert.True(verified.IsVerified);
+        Assert.Equal((staff, later), (verified.VerifiedBy, verified.VerifiedAt));
+        Assert.Equal(
+            "BANK_ACCOUNT_ALREADY_REVIEWED",
+            Errors.CodeOf(() => verified.Reject(staff, "late", later))
+        );
+
+        var rejected = Register(isDefault: false);
+        rejected.Reject(staff, "  Tên chủ tài khoản khác họ tên đăng ký  ", later);
+
+        Assert.Equal(BankAccountStatus.Rejected, rejected.Status);
+        Assert.Equal("Tên chủ tài khoản khác họ tên đăng ký", rejected.RejectionReason);
+        Assert.False(rejected.IsVerified);
+        Assert.Equal(
+            "BANK_ACCOUNT_ALREADY_REVIEWED",
+            Errors.CodeOf(() => rejected.Verify(staff, later))
+        );
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public void A_rejection_needs_a_reason(string? reason) =>
+        Assert.Equal(
+            "INVALID_BANK_ACCOUNT",
+            Errors.CodeOf(() => Register(isDefault: true).Reject(Guid.NewGuid(), reason, Now))
+        );
+
+    [Fact]
+    public void Staff_cannot_review_their_own_account() =>
+        Assert.Equal(
+            "BANK_ACCOUNT_SELF_REVIEW",
+            Errors.CodeOf(() => Register(isDefault: true).Verify(Owner, Now))
+        );
 }

@@ -116,6 +116,12 @@ export interface UploadedDocument {
 export interface ClientDocument {
   id: string
   title: string
+  /** TEMPLATE: drafted with AI from a template; EXTERNAL_FILE: uploaded by the client */
+  source: string
+  /** DRAFT, IN_REVIEW or VERIFIED */
+  status: string
+  periodStart: string | null
+  periodEnd: string | null
 }
 
 // ponytail: first 50 documents only; add paging or search when clients keep more
@@ -127,19 +133,22 @@ export const getMyDocuments = (signal?: AbortSignal) =>
     })
   ).then((page) => page.items)
 
-/** The newest version of a document, the one sent for review; undefined when it has none yet. */
-export const getLatestVersionId = (documentId: string) =>
+/** One version of a client's document, as the client picks which one the expert reviews. */
+export interface DocumentVersionOption {
+  id: string
+  versionNo: number
+  /** AI_DRAFT or EXTERNAL_FILE */
+  versionType: string
+  createdAt: string
+}
+
+/** A document's versions, newest first, so the exact version is chosen rather than assumed (BR-D19). */
+export const getDocumentVersions = (documentId: string, signal?: AbortSignal) =>
   unwrap(
-    api.get<Envelope<{ id: string; versionNo: number }[]>>(
-      `/api/v1/documents/${documentId}/versions`
-    )
-  ).then(
-    (versions) =>
-      versions.reduce<{ id: string; versionNo: number } | undefined>(
-        (newest, v) => (!newest || v.versionNo > newest.versionNo ? v : newest),
-        undefined
-      )?.id
-  )
+    api.get<Envelope<DocumentVersionOption[]>>(`/api/v1/documents/${documentId}/versions`, {
+      signal,
+    })
+  ).then((versions) => [...versions].sort((a, b) => b.versionNo - a.versionNo))
 
 /** Uploads the client's own file as a new document so it can be sent for expert review. */
 export function uploadDocument(
@@ -174,6 +183,10 @@ export const listCaseAttachments = (
   unwrap(
     api.get<Envelope<AttachmentDto[]>>(attachmentsUrl(id, scope), { signal })
   )
+
+/** The uploader takes back a file within 15 minutes of uploading, before any dispute (server rule) */
+export const removeCaseAttachment = (id: string, attachmentId: string) =>
+  api.del(`${attachmentsUrl(id, 'party')}/${attachmentId}`)
 
 export function addCaseAttachment(id: string, file: File) {
   const form = new FormData()

@@ -15,4 +15,7 @@ public interface IPayoutRepository
     );
 
     Task<int> CountAsync(string? status, CancellationToken ct);
+
+    /// <summary>Tracked and locked (FOR UPDATE) until the transaction ends; null when it does not exist.</summary>
+    Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct);
 }

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, FileText, Link2 } from 'lucide-react'
@@ -86,11 +88,13 @@ export default function ExpertQualificationPage() {
     return (
       <>
         {back}
-        <p className="text-sm text-[var(--ep-muted)]">
-          {q.isLoading
-            ? t('qualifications.loading')
-            : t('qualifications.notFound')}
-        </p>
+        {q.isLoading ? (
+          <p className="text-sm" role="status">
+            {t('qualifications.loading')}
+          </p>
+        ) : (
+          <EmptyState title={t('qualifications.notFound')} />
+        )}
       </>
     )
 
@@ -139,15 +143,20 @@ export default function ExpertQualificationPage() {
   return (
     <>
       {back}
-      <div className="ep-page-heading">
-        <div>
-          <h1>{data.serviceName}</h1>
-          <p>
-            {display.qualification(data.status)} ·{' '}
+      <PageHeader
+        className="mb-6"
+        title={data.serviceName}
+        badge={
+          <span className="ep-status ep-status-paused">
+            {display.qualification(data.status)}
+          </span>
+        }
+        actions={
+          <span className="text-sm">
             {t('qualifications.submittedAt', { date: time(data.submittedAt) })}
-          </p>
-        </div>
-      </div>
+          </span>
+        }
+      />
 
       {message && (
         <p
@@ -204,9 +213,14 @@ export default function ExpertQualificationPage() {
                     {t(`qualifications.results.${c.result}`)}
                   </span>
                 </div>
-                <p className="mt-1 whitespace-pre-line text-[var(--ep-muted)]">
-                  {c.note}
-                </p>
+                {c.note && (
+                  // Reviewer reasons must stay readable, not muted, when a criterion is returned
+                  <p
+                    className={`mt-1 whitespace-pre-line ${c.result === 'PASS' || !c.result ? 'text-[var(--ep-muted)]' : 'border-l-2 border-[var(--ep-warning)] pl-3 text-[var(--ep-ink)]'}`}
+                  >
+                    {c.note}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
@@ -288,6 +302,14 @@ export default function ExpertQualificationPage() {
               </span>
             )}
           </div>
+          {issues.length > 0 && (
+            // Say up front which criteria the new evidence must cover
+            <p className="mt-3 text-sm">
+              {t('qualifications.supplementFor', {
+                list: issues.map((c) => competencyName(c.code)).join(', '),
+              })}
+            </p>
+          )}
           <label className="mt-3 flex flex-col gap-2 text-sm font-semibold">
             {t('qualifications.supplementNote')}
             <textarea

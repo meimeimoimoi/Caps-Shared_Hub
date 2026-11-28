@@ -1,8 +1,15 @@
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, CircleAlert, FilePlus2, Upload } from 'lucide-react'
+import {
+  ArrowLeft,
+  CircleAlert,
+  FilePlus2,
+  ShieldCheck,
+  Upload,
+} from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
@@ -14,18 +21,30 @@ import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import {
   createReviewCase,
   getBookingTerms,
-  getLatestVersionId,
+  getDocumentVersions,
   getMyDocuments,
+  listReviewCases,
   uploadDocument,
   type UploadedDocument,
 } from '@/features/review-case/api/reviewCaseApi'
-import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
+import { reviewCaseKeys, useCaseError } from '@/features/review-case/hooks/useReviewCases'
 import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import { cn } from '@/lib/utils'
 
-/* Flow 5 · Bước 1: gửi Review Request cho chuyên gia đã chọn trên Sàn.
- * Chỉ tạo case ở PENDING_EXPERT_RESPONSE; thanh toán chỉ mở sau khi chuyên gia nhận. */
+/* Flow 5, step 1: sends a review request to the expert chosen on the marketplace.
+ * The case starts AWAITING_PAYMENT and the client pays right away from the wallet. */
+
+// The backend's open statuses (ReviewCase.OpenStatuses): a document with such a case cannot be booked again
+const OPEN_CASE_STATUSES = new Set([
+  'AWAITING_PAYMENT',
+  'PENDING_EXPERT_RESPONSE',
+  'IN_REVIEW',
+  'AWAITING_USER_INFORMATION',
+  'AWAITING_ACCEPTANCE',
+  'DISPUTED',
+])
 
 const initialsOf = (name: string) =>
   name
@@ -38,8 +57,8 @@ const initialsOf = (name: string) =>
 
 // The current tax year (00 section 3a); the client can pick another period before uploading
 const TAX_YEAR = new Date().getFullYear()
-// A listed document that has no version yet cannot be booked
-const NO_VERSION = 'NO_VERSION'
+// "2026-01-01" -> "01/01/2026"; a tax period is a calendar day, so no time zone is involved
+const dayOf = (date: string) => date.split('-').reverse().join('/')
 
 export default function ReviewRequestPage() {
   const { t } = useTranslation(['reviewCase', 'common'])
@@ -61,7 +80,6 @@ export default function ReviewRequestPage() {
     enabled: !isExpertDemo && Boolean(expertId && service),
   }).data
 
-  // ponytail: a listed document is booked at its newest version; add a version picker if clients ask for older ones
   const documentId = params.get('document')
   // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
   const versionId = params.get('draftVersion') ?? params.get('version')
@@ -71,6 +89,18 @@ export default function ReviewRequestPage() {
     queryFn: ({ signal }) => getMyDocuments(signal),
     enabled: !isExpertDemo,
   }).data
+  // A document stays IN_REVIEW only once its case is paid, so the client's own open cases are checked too
+  const openCaseDocuments = new Set(
+    (
+      useQuery({
+        queryKey: reviewCaseKeys.list(),
+        queryFn: ({ signal }) => listReviewCases(signal),
+        enabled: !isExpertDemo,
+      }).data ?? []
+    )
+      .filter((c) => OPEN_CASE_STATUSES.has(c.status))
+      .map((c) => c.documentId)
+  )
   const picked = [
     ...(documentId && versionId
       ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
@@ -78,19 +108,28 @@ export default function ReviewRequestPage() {
     ...(uploaded ? [uploaded] : []),
   ]
   // A listed document's radio value is its id; its version is looked up when the request is sent
-  const drafts = isExpertDemo
-    ? REVIEWABLE_DRAFTS
-    : [
-        ...picked,
-        ...(myDocuments ?? [])
-          .filter((d) => !picked.some((p) => p.documentId === d.id))
-          .map((d) => ({
-            id: d.id,
-            documentId: d.id,
-            name: d.title,
-            latest: true,
-          })),
-      ]
+  const listed = isExpertDemo
+    ? []
+    : (myDocuments ?? [])
+        // One open case per document (REVIEW_CASE_ALREADY_OPEN), paid or not
+        .filter(
+          (d) =>
+            d.status !== 'IN_REVIEW' &&
+            !openCaseDocuments.has(d.id) &&
+            !picked.some((p) => p.documentId === d.id)
+        )
+        .map((d) => ({
+          id: d.id,
+          documentId: d.id,
+          name: d.title,
+          latest: true,
+          doc: d,
+        }))
+  const drafts = isExpertDemo ? REVIEWABLE_DRAFTS : [...picked, ...listed]
+  const [docQuery, setDocQuery] = useState('')
+  const shownListed = listed.filter((d) =>
+    d.name.toLowerCase().includes(docQuery.trim().toLowerCase())
+  )
   const [periodStart, setPeriodStart] = useState(`${TAX_YEAR}-01-01`)
   const [periodEnd, setPeriodEnd] = useState(`${TAX_YEAR}-12-31`)
   const [uploading, setUploading] = useState(false)
@@ -99,16 +138,31 @@ export default function ReviewRequestPage() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
   const [draftId, setDraftId] = useState<string>(drafts[0]?.id ?? '')
+  // A listed document loads its versions once chosen; the client picks one, the newest is preselected
+  const chosenListed = listed.find((d) => d.id === draftId)
+  const versions = useQuery({
+    queryKey: ['private', 'document-versions', chosenListed?.documentId],
+    queryFn: ({ signal }) => getDocumentVersions(chosenListed!.documentId, signal),
+    enabled: chosenListed != null,
+  }).data
+  const [pickedVersions, setPickedVersions] = useState<Record<string, string>>({})
+  const chosenVersion = chosenListed
+    ? (pickedVersions[chosenListed.documentId] ?? versions?.[0]?.id)
+    : undefined
   const [scope, setScope] = useState('')
   const [consent, setConsent] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const draftError = submitted && !draftId
   const consentError = submitted && !consent
   const scopeError = !isExpertDemo && submitted && !scope.trim()
+  // Billing holds the fee from this wallet balance, so the client sees it before sending
+  const credits = useCreditOverview()
+  const fee = service?.price == null ? null : Number(service.price)
+  const balance = isExpertDemo ? undefined : credits.data?.wallet.balance
+  const remaining = balance != null && fee != null ? balance - fee : null
+  const shortfall = remaining != null && remaining < 0
 
-  useEffect(() => {
-    document.title = `${t('request.title')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('request.title'))
 
   // The uploaded file becomes version 1 of a new document and is chosen for this request
   const upload = (file: File | undefined) => {
@@ -135,44 +189,34 @@ export default function ReviewRequestPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
-    if (!draftId || !consent) return
+    if (!draftId || !consent || shortfall) return
     if (isExpertDemo) return navigate(`/cases/${DEMO_CASES[0].id}`)
     const chosen = drafts.find((d) => d.id === draftId)
     const chosenDocument =
       chosen && 'documentId' in chosen ? chosen.documentId : null
     if (!scope.trim() || sending || !chosenDocument || !expertId || !service)
       return
+    // A listed document still loading its versions waits; one with none cannot be booked
+    if (chosenListed && !versions) return
+    const sourceVersionId = chosenListed ? chosenVersion : draftId
+    if (!sourceVersionId) return setSendError(t('request.noVersion'))
     setSending(true)
     setSendError(null)
-    const version =
-      chosen && 'latest' in chosen
-        ? getLatestVersionId(chosenDocument)
-        : Promise.resolve(draftId)
-    version
-      .then((sourceVersionId) =>
-        sourceVersionId
-          ? createReviewCase({
-              documentId: chosenDocument,
-              sourceVersionId,
-              expertProfileId: expertId,
-              serviceCode: service.serviceId,
-              problemDescription: scope.trim(),
-              expectedOutcome: null,
-              expectedFee:
-                service.price == null ? null : Number(service.price),
-            })
-          : Promise.reject(new Error(NO_VERSION))
-      )
+    createReviewCase({
+      documentId: chosenDocument,
+      sourceVersionId,
+      expertProfileId: expertId,
+      serviceCode: service.serviceId,
+      problemDescription: scope.trim(),
+      expectedOutcome: null,
+      expectedFee: service.price == null ? null : Number(service.price),
+    })
       .then((c) => navigate(`/cases/${c.id}`))
       .catch((err: unknown) => {
         // The expert changed the price meanwhile: show the new one so the client can send again
         if (err instanceof ApiError && err.code === 'PRICE_CHANGED')
           void query.refetch()
-        setSendError(
-          err instanceof Error && err.message === NO_VERSION
-            ? t('request.noVersion')
-            : toMessage(err)
-        )
+        setSendError(toMessage(err))
         setSending(false)
       })
   }
@@ -250,10 +294,7 @@ export default function ReviewRequestPage() {
         </div>
       ) : (
         <>
-          <h1 className="text-h1 font-serif">{t('request.title')}</h1>
-          <p className="text-fg-muted mt-2 mb-8 max-w-[60ch]">
-            {t('request.lead')}
-          </p>
+          <h1 className="text-h1 mb-8 font-serif">{t('request.title')}</h1>
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <form
               noValidate
@@ -276,7 +317,7 @@ export default function ReviewRequestPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {drafts.map((d) => (
+                    {drafts.filter((d) => !('latest' in d)).map((d) => (
                       <label
                         key={d.id}
                         className={cn(
@@ -318,6 +359,119 @@ export default function ReviewRequestPage() {
                         </span>
                       </label>
                     ))}
+                    {listed.length > 0 && (
+                      // The client's own documents: one compact, scrollable box instead of a card each
+                      <div className="rounded-surface border-border border">
+                        <div className="border-border-subtle flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+                          <span className="text-fg-strong text-sm font-semibold">
+                            {t('request.myDocs.title')}{' '}
+                            <span className="text-fg-muted num font-normal">
+                              ({listed.length})
+                            </span>
+                          </span>
+                          {listed.length > 5 && (
+                            <input
+                              type="search"
+                              value={docQuery}
+                              onChange={(e) => setDocQuery(e.target.value)}
+                              placeholder={t('request.myDocs.search')}
+                              aria-label={t('request.myDocs.search')}
+                              className={cn(fieldClass, 'w-full py-1.5 text-sm sm:w-56')}
+                            />
+                          )}
+                        </div>
+                        <ul className="divide-border-subtle max-h-72 divide-y overflow-y-auto">
+                          {shownListed.map((d) => (
+                            <li key={d.id}>
+                              <label
+                                className={cn(
+                                  'flex cursor-pointer items-center gap-3 border-l-2 px-4 py-2.5 transition-colors',
+                                  draftId === d.id
+                                    ? 'border-ink bg-sunken'
+                                    : 'hover:bg-sunken border-transparent'
+                                )}
+                              >
+                                <input
+                                  type="radio"
+                                  name="draft"
+                                  value={d.id}
+                                  checked={draftId === d.id}
+                                  onChange={() => setDraftId(d.id)}
+                                  className="accent-ink size-4 shrink-0"
+                                />
+                                <span className="min-w-0 flex-1">
+                                  <span className="text-fg-strong block truncate text-sm font-medium">
+                                    {d.name}
+                                  </span>
+                                  <span className="text-fg-muted num block text-xs">
+                                    {t(
+                                      d.doc.source === 'TEMPLATE'
+                                        ? 'request.myDocs.ai'
+                                        : 'request.myDocs.upload'
+                                    )}
+                                    {d.doc.periodStart &&
+                                      d.doc.periodEnd &&
+                                      ` · ${t('request.myDocs.period', {
+                                        from: dayOf(d.doc.periodStart),
+                                        to: dayOf(d.doc.periodEnd),
+                                      })}`}
+                                  </span>
+                                </span>
+                              </label>
+                              {draftId === d.id && versions && versions.length > 1 && (
+                                <div className="bg-sunken border-ink border-l-2 px-4 pb-3 pl-11">
+                                  <label
+                                    htmlFor={`${id}-version`}
+                                    className="text-fg-muted block text-xs"
+                                  >
+                                    {t('request.myDocs.version')}
+                                  </label>
+                                  <select
+                                    id={`${id}-version`}
+                                    value={chosenVersion}
+                                    onChange={(e) =>
+                                      setPickedVersions((picked) => ({
+                                        ...picked,
+                                        [d.documentId]: e.target.value,
+                                      }))
+                                    }
+                                    className={cn(fieldClass, 'mt-1 py-1.5 text-sm')}
+                                  >
+                                    {versions.map((v, i) => (
+                                      <option key={v.id} value={v.id}>
+                                        {t('request.myDocs.versionOption', {
+                                          no: v.versionNo,
+                                          // AI_DRAFT, EXTERNAL_FILE or EXPERT_REVIEWED (DocumentVersion.VersionType)
+                                          kind: t(
+                                            v.versionType === 'EXTERNAL_FILE'
+                                              ? 'request.myDocs.upload'
+                                              : v.versionType === 'EXPERT_REVIEWED'
+                                                ? 'request.myDocs.expertReviewed'
+                                                : 'request.myDocs.ai'
+                                          ),
+                                          at: f.at(v.createdAt),
+                                        })}
+                                        {i === 0 ? ` · ${t('request.myDocs.newest')}` : ''}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                              {draftId === d.id && versions?.length === 0 && (
+                                <p className="text-danger bg-sunken border-ink border-l-2 px-4 pb-3 pl-11 text-xs">
+                                  {t('request.noVersion')}
+                                </p>
+                              )}
+                            </li>
+                          ))}
+                          {shownListed.length === 0 && (
+                            <li className="text-fg-muted px-4 py-3 text-sm">
+                              {t('request.myDocs.none')}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
                 {!isExpertDemo && (
@@ -462,6 +616,15 @@ export default function ReviewRequestPage() {
                   </ul>
                 </section>
               )}
+              {/* Escrow terms come before the consent they are part of */}
+              <p className="text-fg mt-8 mb-4 flex items-start gap-2 text-sm">
+                <ShieldCheck
+                  size={16}
+                  aria-hidden="true"
+                  className="text-success mt-0.5 shrink-0"
+                />
+                {t('request.lead')}
+              </p>
               <label className="flex cursor-pointer items-start gap-3 text-sm">
                 <input
                   type="checkbox"
@@ -490,12 +653,30 @@ export default function ReviewRequestPage() {
                   {sendError}
                 </p>
               )}
+              {shortfall && remaining != null && (
+                <p
+                  id={`${id}-shortfall`}
+                  role="alert"
+                  className="text-danger mt-8 text-sm"
+                >
+                  {t('request.shortfall', { amount: f.money(-remaining) })}{' '}
+                  <Link to="/wallet" className="font-semibold underline">
+                    {t('request.toWallet')}
+                  </Link>
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={sending}
+                disabled={sending || shortfall}
+                aria-busy={sending}
+                aria-describedby={shortfall ? `${id}-shortfall` : undefined}
                 className="btn btn-press btn-primary mt-8 disabled:opacity-60 max-sm:w-full"
               >
-                {t('request.submit')}
+                {sending
+                  ? t('request.sending')
+                  : fee == null
+                    ? t('request.submit')
+                    : t('request.submitHold', { amount: f.money(fee) })}
               </button>
             </form>
 
@@ -533,6 +714,38 @@ export default function ReviewRequestPage() {
                         : f.money(Number(service.price))}
                     </dd>
                   </div>
+                  {balance != null && fee != null && remaining != null && (
+                    <>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-fg-muted">
+                          {t('request.balance')}
+                        </dt>
+                        <dd className="num text-fg-strong">
+                          {f.money(balance)}
+                        </dd>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-fg-muted">{t('request.hold')}</dt>
+                        <dd className="num text-fg-strong">
+                          {'\u2212'}
+                          {f.money(fee)}
+                        </dd>
+                      </div>
+                      <div className="border-border-subtle flex items-baseline justify-between gap-4 border-t pt-3">
+                        <dt className="text-fg-strong font-semibold">
+                          {t('request.remaining')}
+                        </dt>
+                        <dd
+                          className={cn(
+                            'num font-semibold',
+                            shortfall ? 'text-danger' : 'text-fg-strong'
+                          )}
+                        >
+                          {f.money(remaining)}
+                        </dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </section>
 

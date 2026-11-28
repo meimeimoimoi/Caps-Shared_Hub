@@ -1,4 +1,5 @@
 {
+  "pageTitle": "{{page}} | Shared Hub",
   "routeError": {
     "title": "Chưa thể tải trang này.",
     "description": "Một phần của Shared Hub chưa tải được. Hãy tải lại trang để thử lại.",
@@ -143,6 +144,16 @@
       "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
     },
+    "priceOutOfRange": "Giá dịch vụ {{service}} nằm ngoài khoảng mới {{min}}–{{max}} đ nên đang bị ẩn khỏi sàn. Hãy chỉnh giá.",
+    "platformFee": {
+      "announced": "Phí nền tảng dịch vụ {{service}} đổi từ {{from}}% thành {{to}}% từ ngày {{date}}. Xem số tiền bạn nhận và điều chỉnh giá nếu cần.",
+      "cancelled": "Thay đổi phí nền tảng dịch vụ {{service}} đã được hủy; phí giữ nguyên {{from}}%."
+    },
+    "violation": {
+      "LATE": "Bạn bị cộng 1 điểm vi phạm vì giao trễ. Nếu do bất khả kháng, hãy xin miễn trong 2 ngày.",
+      "WITHDREW": "Bạn bị cộng 2 điểm vi phạm vì rút khỏi hồ sơ đã nhận. Nếu do bất khả kháng, hãy xin miễn trong 2 ngày.",
+      "NO_DELIVERY": "Bạn bị cộng 3 điểm vi phạm vì không bàn giao. Nếu do bất khả kháng, hãy xin miễn trong 2 ngày."
+    },
     "reviewCase": {
       "requested": "Bạn có yêu cầu review mới. Hãy nhận hoặc từ chối trước hạn phản hồi.",
       "infoRequested": "Chuyên gia cần bạn bổ sung thông tin. Hãy trả lời trước hạn để hồ sơ không bị kết thúc.",
@@ -168,6 +179,7 @@
       "extensionAccepted": "Khách hàng đã đồng ý gia hạn {{days}} ngày làm việc; hạn giao kết quả đã dời.",
       "extensionDeclined": "Khách hàng không đồng ý gia hạn; hạn giao kết quả giữ nguyên.",
       "statementDue": "Một khiếu nại sắp hết hạn giải trình. Hãy gửi giải trình và bằng chứng trước khi quản trị viên quyết định.",
+      "disputeExtended": "Hạn quyết định khiếu nại được lùi tới {{at}}. Khoản tiền vẫn được giữ tới khi có quyết định.",
       "disputeOverdue": "Quyết định khiếu nại đang chậm hơn dự kiến. Khoản tiền vẫn được giữ an toàn cho tới khi có quyết định."
     }
   },

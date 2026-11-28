@@ -78,7 +78,7 @@ public sealed partial class ReviewCase
     /// Moves an overdue case to its timeout status (used by the crons). Returns null when nothing is
     /// overdue, so a cron that runs twice changes nothing.
     /// </summary>
-    public ReviewStatusHistory? ExpireIfOverdue(DateTimeOffset now)
+    public ReviewStatusHistory? ExpireIfOverdue(DateTimeOffset now, WorkCalendar? calendar = null)
     {
         var status = Status switch
         {
@@ -90,7 +90,8 @@ public sealed partial class ReviewCase
             ReviewCaseStatus.AwaitingAcceptance when now >= AcceptanceDeadline =>
                 ReviewCaseStatus.AutoConfirmed,
             // Not delivered by the last late hour: the caller settles the frozen no-delivery split
-            ReviewCaseStatus.InReview when now >= CancelAt => ReviewCaseStatus.DeliveryOverdue,
+            ReviewCaseStatus.InReview when now >= CancelAt(calendar) =>
+                ReviewCaseStatus.DeliveryOverdue,
             _ => null,
         };
         if (status is null)

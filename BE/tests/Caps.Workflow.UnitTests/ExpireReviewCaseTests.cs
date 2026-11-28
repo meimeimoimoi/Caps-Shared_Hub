@@ -64,8 +64,8 @@ public sealed class ExpireReviewCaseTests
     public async Task An_expert_who_never_delivers_settles_the_frozen_share_and_frees_the_slot()
     {
         var reviewCase = Accepted();
-        // Due one working day later (Friday, T0 + 24h), then the 72h cancel window
-        var run = new Run(reviewCase, T0.AddHours(96));
+        // Due one working day later (Friday 15:00); the 72 late hours skip the weekend: Wednesday 15:00
+        var run = new Run(reviewCase, T0.AddHours(144));
 
         await run.ExpireAsync();
 
@@ -171,6 +171,34 @@ public sealed class ExpireReviewCaseTests
 
         Assert.Empty(run.Escrows.Calls);
         Assert.False(run.UnitOfWork.Saved);
+    }
+
+    [Fact]
+    public void Next_deadline_follows_the_current_step()
+    {
+        var reviewCase = Booked();
+        Assert.Equal(reviewCase.PaymentDeadline, reviewCase.NextDeadline);
+
+        reviewCase.ConfirmPayment(T0);
+        Assert.Equal(reviewCase.ResponseDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Accept(ExpertProfile, Expert, T0);
+        Assert.Equal(reviewCase.DeliveryDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Looks right",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            T0
+        );
+        Assert.Equal(reviewCase.AcceptanceDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Confirm(Client, T0);
+        Assert.Null(reviewCase.NextDeadline);
     }
 
     private static ReviewCase Booked() =>

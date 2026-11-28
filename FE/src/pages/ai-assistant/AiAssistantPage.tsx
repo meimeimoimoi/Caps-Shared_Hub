@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { LogIn, PanelLeftOpen, SquarePen } from 'lucide-react'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Toast } from '@/components/ui/feedback/toast'
@@ -63,9 +64,7 @@ export default function AiAssistantPage() {
   const scrollArea = useRef<HTMLDivElement>(null)
   useDialogMotion(navDrawer, 'drawer-left')
 
-  useEffect(() => {
-    document.title = `${t('aiAssistant:pageTitle')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('aiAssistant:pageTitle'))
 
   // Giữ câu trả lời mới nhất trong tầm nhìn; không cuộn mượt khi người dùng giảm chuyển động
   useEffect(() => {

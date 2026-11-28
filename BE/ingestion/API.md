@@ -59,10 +59,14 @@ Path tính từ `/api/v1/knowledge`.
 | GET | `/crawl-jobs` | KnowledgeManage | Lịch sử crawl |
 | GET | `/crawl-jobs/{id}` | KnowledgeManage | Một job, kèm tiến trình (gọi lại định kỳ khi `RUNNING`) |
 | POST | `/documents/upload` | KnowledgeManage | Upload PDF/DOCX |
+| GET | `/documents?status` | KnowledgeManage | Mọi văn bản theo trạng thái (gồm `INDEX_FAILED`) |
 | GET | `/documents/pending` | KnowledgeManage | Hàng chờ duyệt |
 | GET | `/documents/{id}/preview` | KnowledgeManage | Xem một văn bản để duyệt |
 | GET | `/documents/{id}/file` | KnowledgeManage | Tải file gốc (văn bản upload) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | Từ chối văn bản |
+| POST | `/documents/{id}/reviewed-units` | KnowledgeManage | Đánh dấu một đơn vị đã rà soát (`{ unitId }`), lưu `reviewed: true` trong `contentJson` |
+| POST | `/documents/{id}/reprocess` | KnowledgeManage | Bóc tách lại văn bản upload đang `PENDING` (bắt buộc `reason`, lưu ở `metadata.reprocess`) |
+| POST | `/documents/{id}/retire` | KnowledgeManage | Ngừng dùng văn bản `INDEXED` → `ARCHIVED`, vector trong Qdrant cũng `ARCHIVED` (bắt buộc `reason`, lưu ở `metadata.retire`) |
 | GET | `/sources` | Tài khoản ACTIVE | Tra cứu danh mục văn bản |
 | GET | `/sources/{id}/tree` | Tài khoản ACTIVE | Cây sửa đổi |
 
@@ -201,6 +205,14 @@ Response **200**, `data` là bản tóm tắt của văn bản (các field giả
 ```
 
 Lỗi: 400 `FILE_REQUIRED`, `FILE_TOO_LARGE`, `FILE_INVALID_TYPE`, `INVALID_EFFECTIVE_PERIOD`; 409 `DOCUMENT_DUPLICATE`.
+
+### GET `/documents?status=INDEX_FAILED&page=1&pageSize=20`
+
+Văn bản theo trạng thái, mới nhất trước; item giống `GET /documents/pending`. `status` lặp được
+(`status=APPROVED&status=INDEX_FAILED`), bỏ trống là mọi trạng thái. Dùng để thấy văn bản index lỗi (đã rời hàng chờ
+duyệt) rồi gọi `retry-index`.
+
+Lỗi: 400 `INVALID_PAGING`, `INVALID_DOCUMENT_STATUS`.
 
 ### GET `/documents/pending?page=1&pageSize=20`
 
@@ -399,6 +411,12 @@ ingestion chưa cấu hình key thì trả 401 `INTERNAL_KEY_INVALID`. Cách đ�
 | POST | `/internal/crawl-jobs/{id}/complete` | `{ "status", "docsFound", "detail" }` | Crawl job |
 | GET | `/internal/documents/{id}/file` | | File gốc, như `/documents/{id}/file` |
 | POST | `/internal/documents/{id}/content` | `{ "contentJson" }` hoặc `{ "error" }` | `{}`, message `Content saved.` |
+| POST | `/internal/crawl-jobs/scheduled` | `{ "sources", "topN" }` | Crawl job (202) hoặc không có body (204) |
+
+**Crawl theo lịch** (`/crawl-jobs/scheduled`): do service `cronjob` gọi mỗi giờ sau ngày giờ đã cấu hình trong tháng.
+Tạo job `triggerType: SCHEDULED` (`triggeredBy` null) và trả 202. Trả 204 khi tháng này (giờ Việt Nam) đã có lượt theo
+lịch `RUNNING` hoặc `SUCCEEDED`, hoặc đã có 3 lượt theo lịch. Lượt `FAILED` (hoặc `RUNNING` quá 12 giờ) thì được chạy lại.
+Lỗi: 400 `INVALID_CRAWL_SOURCE`; 409 `CRAWL_ALREADY_RUNNING` khi đang có crawl thủ công, cronjob gọi lại lần sau.
 
 **Import văn bản** (`/documents`): body là nguyên một file `export/<loai>/<so-hieu>.json` (schema_version 2), key
 snake_case:
@@ -472,4 +490,4 @@ Chỉ có ở API nội bộ: `INTERNAL_KEY_INVALID` (401), `CRAWL_JOB_NOT_FOUND
 - API duyệt văn bản (`APPROVED`), tách chunk và index vào vector store.
 - Sửa metadata của nguồn văn bản, xoá văn bản.
 - Quan hệ sửa đổi giữa hai văn bản cùng khớp từ khoá (export chỉ có `related_from`), `affectedArticles`, quan hệ VBHN.
-- Chọn từ khoá hoặc loại văn bản khi crawl; crawl theo lịch (`SCHEDULED`).
+- Chọn từ khoá hoặc loại văn bản khi crawl.

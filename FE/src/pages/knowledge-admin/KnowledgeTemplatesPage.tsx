@@ -4,6 +4,7 @@ import { Upload } from 'lucide-react'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import {
   TEMPLATE_CATEGORY,
@@ -25,7 +26,14 @@ export default function KnowledgeTemplatesPage() {
   return (
     <KnowledgeLayout {...nav} section="templates" breadcrumb="Template">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <h1 className="text-h1">Template</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-h1">Template</h1>
+          <HelpTip label="Về Template">
+            Mẫu văn bản người dùng chọn khi soạn nháp. Mỗi bản nháp giữ nguyên
+            phiên bản template lúc tạo, nên tạm ngưng hay phát hành phiên bản
+            mới không làm đổi bản nháp đang có.
+          </HelpTip>
+        </div>
         <Link
           to="/knowledge/templates/new"
           className="btn btn-press btn-primary no-underline"
@@ -34,11 +42,6 @@ export default function KnowledgeTemplatesPage() {
           Tạo template
         </Link>
       </div>
-      <p className="text-fg-muted mt-3 max-w-[65ch]">
-        Mẫu văn bản người dùng chọn khi soạn nháp. Mỗi bản nháp giữ nguyên phiên
-        bản template lúc tạo, nên tạm ngưng hay phát hành phiên bản mới không
-        làm đổi bản nháp đang có.
-      </p>
 
       <div
         role="group"
