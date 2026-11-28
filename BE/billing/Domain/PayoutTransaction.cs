@@ -216,6 +216,42 @@ public sealed class PayoutTransaction
         Record(null, now);
     }
 
+    /// <summary>
+    /// Staff paid it by hand from the platform bank account (no PayOS payout channel). Passes the same checks as
+    /// a PayOS attempt; the bank transaction id becomes ProviderRef, which is unique, so one bank transfer can
+    /// never confirm two payouts.
+    /// </summary>
+    public void ConfirmManual(
+        Guid staffId,
+        string bankRef,
+        long amount,
+        DateTimeOffset transferredAt,
+        long fee,
+        DateTimeOffset now,
+        bool newAccount = false
+    )
+    {
+        if (amount != Amount)
+            throw BillingErrors.PayoutAmountMismatch(Amount);
+        if (transferredAt > now)
+            throw BillingErrors.PayoutManualInvalid();
+        StartAttempt(staffId, now, newAccount);
+        ProviderRef = bankRef.Trim();
+        Status = PayoutStatus.Succeeded;
+        CompletedAt = transferredAt;
+        TransferFee = fee;
+        history.Add(PayoutStatusHistory.Of(this, staffId, now, null, $"MANUAL {ProviderRef}"));
+    }
+
+    /// <summary>Staff report that a manual transfer bounced; it uses up one attempt like a PayOS failure.</summary>
+    public void FailManual(Guid staffId, string reason, DateTimeOffset now, bool newAccount = false)
+    {
+        StartAttempt(staffId, now, newAccount);
+        Status = PayoutStatus.Failed;
+        LastError = reason.Trim();
+        Record(staffId, now);
+    }
+
     private void Snapshot(BankAccount account)
     {
         BankAccountId = account.Id;

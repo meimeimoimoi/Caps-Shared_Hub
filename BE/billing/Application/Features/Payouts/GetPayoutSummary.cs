@@ -9,7 +9,12 @@ namespace Caps.Billing.Application.Features.Payouts;
 public sealed record GetPayoutSummaryQuery;
 
 /// <summary>The unsent payouts by deadline stage and the PayOS payout balance (null when unknown).</summary>
-public sealed record PayoutSummaryResponse(PayoutSummary Summary, long? Balance);
+/// <remarks>ChannelAvailable is false when PayOS payout keys are missing: staff then pay by hand.</remarks>
+public sealed record PayoutSummaryResponse(
+    PayoutSummary Summary,
+    long? Balance,
+    bool ChannelAvailable
+);
 
 /// <summary>The same counts as the daily digest, live.</summary>
 public sealed class GetPayoutSummaryHandler(
@@ -29,6 +34,6 @@ public sealed class GetPayoutSummaryHandler(
             clock.GetUtcNow(),
             calendar
         );
-        return new(summary, await gateway.GetBalanceAsync(ct));
+        return new(summary, await gateway.GetBalanceAsync(ct), gateway.IsAvailable);
     }
 }

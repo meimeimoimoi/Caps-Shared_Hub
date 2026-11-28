@@ -55,20 +55,8 @@ public sealed class TransferPayoutHandler(
             }
 
             var now = clock.GetUtcNow();
-            var accounts = await bankAccounts.ListAsync(payout.RecipientUserId, ct);
-            var account =
-                accounts.FirstOrDefault(x => x.Id == payout.BankAccountId && x.IsVerified)
-                ?? accounts.FirstOrDefault(x => x.IsDefault && x.IsVerified)
-                ?? throw (
-                    accounts.Count == 0
-                        ? BillingErrors.PayoutNoBankAccount()
-                        : BillingErrors.PayoutAccountNotVerified()
-                );
-            var newAccount = account.Id != payout.BankAccountId;
-            if (newAccount)
-            {
-                payout.UseAccount(account, now);
-            }
+            var account = await PayoutAccounts.PickAsync(bankAccounts, payout, ct);
+            var newAccount = PayoutAccounts.Use(payout, account, now);
             payout.StartAttempt(command.StaffId, now, newAccount);
             accountNumber = protector.Reveal(account.AccountNumberEnc);
             await unitOfWork.SaveChangesAsync(ct);

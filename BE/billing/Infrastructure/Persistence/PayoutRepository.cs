@@ -51,6 +51,30 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
             )
             .SingleOrDefaultAsync(ct);
 
+    public Task<PayoutTransaction?> GetAsync(Guid id, CancellationToken ct) =>
+        db.PayoutTransactions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+
+    public Task<bool> ProviderRefExistsAsync(string providerRef, CancellationToken ct) =>
+        db.PayoutTransactions.AnyAsync(x => x.ProviderRef == providerRef, ct);
+
+    public async Task<IReadOnlyList<PayoutTransaction>> ListPaidAsync(
+        DateTimeOffset paidFrom,
+        DateTimeOffset paidTo,
+        CancellationToken ct
+    ) =>
+        await db
+            .PayoutTransactions.AsNoTracking()
+            .Include(x => x.Settlement)
+            .Include(x => x.History)
+            .Where(x =>
+                x.Status == PayoutStatus.Succeeded
+                && x.CompletedAt >= paidFrom
+                && x.CompletedAt < paidTo
+            )
+            .OrderBy(x => x.CompletedAt)
+            .ThenBy(x => x.Id)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
         await db
             .PayoutTransactions.AsNoTracking()

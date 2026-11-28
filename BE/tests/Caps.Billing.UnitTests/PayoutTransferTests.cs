@@ -394,6 +394,269 @@ public sealed class PayoutTransferTests
         }
     }
 
+    [Fact]
+    public async Task Manual_info_reveals_the_verified_account_and_a_matchable_description()
+    {
+        var store = new Store(Account(isDefault: true));
+
+        var info = await store.ManualInfo();
+
+        Assert.Equal(
+            ("970422", "0123456789", 450_000L),
+            (info.BankBin, info.AccountNumber, info.Amount)
+        );
+        Assert.Equal($"CAPS {store.Payout.Id:N}", info.Description);
+        Assert.Equal(PayoutStatus.Pending, store.Payout.Status);
+    }
+
+    [Fact]
+    public async Task A_confirmed_manual_transfer_is_paid_with_fee_ref_and_the_confirming_staff()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        var sentAt = Now.AddHours(-1);
+
+        var paid = await store.ConfirmManual(" FT2611ABC ", 450_000, sentAt);
+
+        Assert.Equal(
+            ("SUCCEEDED", "FT2611ABC", 1, sentAt, 3_300L),
+            (paid.Status, paid.ProviderRef, paid.AttemptCount, paid.CompletedAt, paid.TransferFee)
+        );
+        Assert.Equal(Staff, store.Payout.History[^1].ActorUserId);
+        Assert.Equal("SUCCEEDED", Assert.Single(store.Outbox.Sent).Change);
+        Assert.Equal(
+            "PAYOUT_NOT_TRANSFERABLE",
+            (
+                await Assert.ThrowsAsync<AppException>(() =>
+                    store.ConfirmManual("FT2", 450_000, sentAt)
+                )
+            ).Code
+        );
+    }
+
+    [Fact]
+    public async Task A_manual_confirmation_is_refused_on_a_wrong_amount_used_ref_or_live_channel()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        store.UsedRefs.Add("FT_USED");
+
+        async Task<string> Code(Func<Task> act) =>
+            (await Assert.ThrowsAsync<AppException>(act)).Code;
+
+        Assert.Equal(
+            "PAYOUT_AMOUNT_MISMATCH",
+            await Code(() => store.ConfirmManual("FT1", 450_001, Now))
+        );
+        Assert.Equal(
+            "PAYOUT_BANK_REF_USED",
+            await Code(() => store.ConfirmManual("FT_USED", 450_000, Now))
+        );
+        Assert.Equal(
+            "PAYOUT_MANUAL_INVALID",
+            await Code(() => store.ConfirmManual("FT1", 450_000, Now.AddHours(1)))
+        );
+        store.Gateway.Available = true;
+        Assert.Equal(
+            "PAYOUT_CHANNEL_AVAILABLE",
+            await Code(() => store.ConfirmManual("FT1", 450_000, Now))
+        );
+        Assert.Equal((PayoutStatus.Pending, 0), (store.Payout.Status, store.Payout.AttemptCount));
+    }
+
+    [Fact]
+    public async Task A_manual_transfer_waits_for_the_hold_period_like_payos()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        store.Clock.Now = Now.AddDays(-1);
+
+        var error = await Assert.ThrowsAsync<AppException>(() =>
+            store.ConfirmManual("FT1", 450_000, store.Clock.Now)
+        );
+
+        Assert.Equal("PAYOUT_ON_HOLD", error.Code);
+    }
+
+    [Fact]
+    public async Task Each_reported_manual_failure_uses_an_attempt_until_another_account_is_needed()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+
+        for (var i = 0; i < PayoutTransaction.MaxAttempts; i++)
+        {
+            var failed = await store.FailManual("Sai tên chủ tài khoản");
+            Assert.Equal(("FAILED", i + 1), (failed.Status, failed.AttemptCount));
+        }
+
+        Assert.True(store.Payout.AttemptsExhausted);
+        Assert.Equal(
+            "PAYOUT_ATTEMPTS_EXHAUSTED",
+            (await Assert.ThrowsAsync<AppException>(() => store.FailManual("again"))).Code
+        );
+    }
+
+    [Fact]
+    public async Task The_export_lists_paid_payouts_in_range_with_ref_fee_vietnam_time_and_confirmer()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        var sentAt = new DateTimeOffset(2026, 11, 26, 2, 30, 0, TimeSpan.Zero);
+        await store.ConfirmManual("FT2611ABC", 450_000, sentAt);
+
+        var csv = await store.Export(Now.AddDays(-1), Now.AddDays(1));
+
+        Assert.StartsWith("\uFEFFpayout_id,case_id,", csv);
+        var lines = csv.Split(Crlf);
+        var row = lines[1].Split(',');
+        Assert.Equal(store.Payout.Id.ToString(), row[0]);
+        Assert.Equal(store.Payout.Settlement.ReviewCaseId.ToString(), row[1]);
+        Assert.Equal(
+            ("450000", "3300", "FT2611ABC", "2026-11-26 09:30:00", Staff.ToString()),
+            (row[6], row[7], row[8], row[9], row[10])
+        );
+        // Header, one row, then the empty tail after the last line break
+        Assert.Equal(3, lines.Length);
+        Assert.Equal(2, (await store.Export(Now.AddDays(1), Now.AddDays(2))).Split(Crlf).Length);
+    }
+
+    private const string Crlf = "\r\n";
+
+    [Theory]
+    [InlineData("=HYPERLINK(1)", "'=HYPERLINK(1)")]
+    [InlineData("Nguyen, Van \"A\"", "\"Nguyen, Van \"\"A\"\"\"")]
+    [InlineData("VCB", "VCB")]
+    public void Csv_cells_are_quoted_and_formulas_defused(string value, string expected) =>
+        Assert.Equal(expected, ExportPaidPayoutsHandler.Cell(value));
+
+    [Fact]
+    public async Task The_export_range_must_be_forward_and_at_most_a_year()
+    {
+        var store = new Store(Account(isDefault: true));
+        foreach (var (from, to) in new[] { (Now, Now), (Now, Now.AddDays(367)) })
+        {
+            var error = await Assert.ThrowsAsync<AppException>(() => store.Export(from, to));
+            Assert.Equal("PAYOUT_EXPORT_RANGE_INVALID", error.Code);
+        }
+    }
+
+    private static async Task<string> CodeOf(Func<Task> act) =>
+        (await Assert.ThrowsAsync<AppException>(act)).Code;
+
+    [Fact]
+    public async Task A_held_payout_cannot_be_confirmed_or_failed_by_hand()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        await store.Hold(false, "Nghi ngờ gian lận, cần xác minh");
+
+        Assert.Equal("PAYOUT_HELD", await CodeOf(() => store.ConfirmManual("FT1", 450_000, Now)));
+        Assert.Equal("PAYOUT_HELD", await CodeOf(() => store.FailManual("Sai tên")));
+        Assert.Equal((PayoutStatus.Pending, 0), (store.Payout.Status, store.Payout.AttemptCount));
+    }
+
+    [Fact]
+    public async Task Manual_transfers_need_a_verified_account()
+    {
+        var unverified = new Store(Account(isDefault: true, verified: false))
+        {
+            Gateway = { Available = false },
+        };
+        Assert.Equal("PAYOUT_ACCOUNT_NOT_VERIFIED", await CodeOf(unverified.ManualInfo));
+        Assert.Equal(
+            "PAYOUT_ACCOUNT_NOT_VERIFIED",
+            await CodeOf(() => unverified.ConfirmManual("FT1", 450_000, Now))
+        );
+        Assert.Equal(
+            "PAYOUT_ACCOUNT_NOT_VERIFIED",
+            await CodeOf(() => unverified.FailManual("Sai tên"))
+        );
+
+        var none = new Store(null) { Gateway = { Available = false } };
+        Assert.Equal("PAYOUT_NO_BANK_ACCOUNT", await CodeOf(none.ManualInfo));
+        Assert.Equal(
+            "PAYOUT_NO_BANK_ACCOUNT",
+            await CodeOf(() => none.ConfirmManual("FT1", 450_000, Now))
+        );
+        Assert.Equal((PayoutStatus.Pending, 0), (none.Payout.Status, none.Payout.AttemptCount));
+    }
+
+    [Fact]
+    public async Task An_unknown_payout_is_not_found_for_every_manual_action()
+    {
+        var store = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        var missing = Guid.NewGuid();
+
+        Assert.Equal(
+            "PAYOUT_NOT_FOUND",
+            await CodeOf(() =>
+                new GetPayoutTransferInfoHandler(store, store, store).HandleAsync(
+                    new(missing),
+                    default
+                )
+            )
+        );
+        Assert.Equal(
+            "PAYOUT_NOT_FOUND",
+            await CodeOf(() =>
+                new ConfirmManualPayoutHandler(
+                    store,
+                    store,
+                    store.Gateway,
+                    store,
+                    store.Clock,
+                    WorkCalendar.WeekendsOnly,
+                    store.Outbox,
+                    store.Fees
+                ).HandleAsync(new(missing, Staff, "FT1", 450_000, Now), default)
+            )
+        );
+        Assert.Equal(
+            "PAYOUT_NOT_FOUND",
+            await CodeOf(() =>
+                new FailManualPayoutHandler(
+                    store,
+                    store,
+                    store.Gateway,
+                    store,
+                    store.Clock,
+                    WorkCalendar.WeekendsOnly,
+                    store.Outbox
+                ).HandleAsync(new(missing, Staff, "Sai tên"), default)
+            )
+        );
+    }
+
+    [Fact]
+    public async Task A_failure_cannot_be_reported_while_payos_is_live_or_after_payment()
+    {
+        var live = new Store(Account(isDefault: true));
+        Assert.Equal("PAYOUT_CHANNEL_AVAILABLE", await CodeOf(() => live.FailManual("Sai tên")));
+        Assert.Equal(0, live.Payout.AttemptCount);
+
+        var paid = new Store(Account(isDefault: true)) { Gateway = { Available = false } };
+        await paid.ConfirmManual("FT1", 450_000, Now);
+        Assert.Equal("PAYOUT_NOT_TRANSFERABLE", await CodeOf(() => paid.FailManual("Sai tên")));
+        Assert.Equal(PayoutStatus.Succeeded, paid.Payout.Status);
+        Assert.Equal("PAYOUT_NOT_TRANSFERABLE", await CodeOf(paid.ManualInfo));
+    }
+
+    [Fact]
+    public async Task After_all_attempts_fail_a_new_verified_account_can_be_paid_by_hand()
+    {
+        var old = Account(isDefault: true, last4: "1111");
+        var store = new Store(old) { Gateway = { Available = false } };
+        for (var i = 0; i < PayoutTransaction.MaxAttempts; i++)
+            await store.FailManual("Sai tên chủ tài khoản");
+        Assert.True(store.Payout.AttemptsExhausted);
+
+        // The expert removes the wrong account and links a new one that staff verify
+        old.Delete(Now);
+        store.Add(Account(isDefault: true, last4: "2222"));
+
+        var info = await store.ManualInfo();
+        Assert.Equal("Vietcombank", info.BankName);
+        var paid = await store.ConfirmManual("FT_NEW", 450_000, Now);
+
+        Assert.Equal(("SUCCEEDED", "2222"), (paid.Status, store.Payout.SnapAccountLast4));
+        Assert.Equal(PayoutTransaction.MaxAttempts + 1, paid.AttemptCount);
+    }
+
     private sealed class Store
         : IPayoutRepository,
             IBankAccountRepository,
@@ -454,6 +717,32 @@ public sealed class PayoutTransferTests
                 Fees
             ).HandleAsync(new(Payout.Id, Staff), default);
 
+        public Task<PayoutTransferInfoResponse> ManualInfo() =>
+            new GetPayoutTransferInfoHandler(this, this, this).HandleAsync(new(Payout.Id), default);
+
+        public Task<PayoutResponse> ConfirmManual(string bankRef, long amount, DateTimeOffset at) =>
+            new ConfirmManualPayoutHandler(
+                this,
+                this,
+                Gateway,
+                this,
+                Clock,
+                WorkCalendar.WeekendsOnly,
+                Outbox,
+                Fees
+            ).HandleAsync(new(Payout.Id, Staff, bankRef, amount, at), default);
+
+        public Task<PayoutResponse> FailManual(string reason) =>
+            new FailManualPayoutHandler(
+                this,
+                this,
+                Gateway,
+                this,
+                Clock,
+                WorkCalendar.WeekendsOnly,
+                Outbox
+            ).HandleAsync(new(Payout.Id, Staff, reason), default);
+
         public Task<PayoutResponse> Refresh() =>
             new RefreshPayoutHandler(
                 this,
@@ -467,6 +756,33 @@ public sealed class PayoutTransferTests
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
             Task.FromResult<PayoutTransaction?>(Payout.Id == id ? Payout : null);
+
+        public Task<PayoutTransaction?> GetAsync(Guid id, CancellationToken ct) =>
+            LockAsync(id, ct);
+
+        public HashSet<string> UsedRefs { get; } = [];
+
+        public Task<bool> ProviderRefExistsAsync(string providerRef, CancellationToken ct) =>
+            Task.FromResult(UsedRefs.Contains(providerRef));
+
+        public Task<IReadOnlyList<PayoutTransaction>> ListPaidAsync(
+            DateTimeOffset from,
+            DateTimeOffset to,
+            CancellationToken ct
+        ) =>
+            Task.FromResult<IReadOnlyList<PayoutTransaction>>(
+                Payout.Status == PayoutStatus.Succeeded
+                && Payout.CompletedAt >= from
+                && Payout.CompletedAt < to
+                    ? [Payout]
+                    : []
+            );
+
+        public async Task<string> Export(DateTimeOffset from, DateTimeOffset to)
+        {
+            var file = await new ExportPaidPayoutsHandler(this).HandleAsync(new(from, to), default);
+            return System.Text.Encoding.UTF8.GetString(file.Content);
+        }
 
         public Task<IReadOnlyList<PayoutTransaction>> ListAsync(
             PayoutFilter filter,
