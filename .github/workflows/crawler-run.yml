@@ -1,0 +1,46 @@
+name: Crawler run
+
+# Runs the crawler on a GitHub runner and uploads data/ as an artifact, so nobody has to crawl locally.
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'scraper_agent.py arguments'
+        required: true
+        default: '--all --sources vbpl,mof --export'
+
+jobs:
+  crawl:
+    name: Crawl legal documents
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Same image as production: Playwright Chromium + Tesseract (Vietnamese) for OCR
+      - name: Build crawler image
+        run: docker build -t caps-crawler crawler
+
+      - name: Run crawler
+        env:
+          CRAWL_ARGS: ${{ inputs.args }}
+        run: |
+          mkdir -p crawler/data crawler/logs
+          # CRAWL_ARGS is split into separate arguments on purpose
+          docker run --rm \
+            -v "$PWD/crawler/data:/app/data" \
+            -v "$PWD/crawler/logs:/app/logs" \
+            caps-crawler $CRAWL_ARGS
+
+      - name: Upload crawl data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-data-${{ github.run_id }}
+          path: |
+            crawler/data
+            crawler/logs
+          if-no-files-found: warn
+          retention-days: 90

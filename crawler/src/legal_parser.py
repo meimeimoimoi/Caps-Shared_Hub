@@ -323,7 +323,9 @@ class _Parser:
             return
         if self.phase == "body" and line.startswith(_OPEN_QUOTE):
             self._append_text(line)
-            if not _CLOSE_QUOTE_RE.search(line[1:]):
+            # A label quoted mid-line ('"Đơn giá" ghi: ...') is closed already, not an amendment block
+            left_open = line.count("“") > line.count("”") or line.count('"') % 2 == 1
+            if left_open and not _CLOSE_QUOTE_RE.search(line[1:]):
                 self.in_quote = True
             return
 

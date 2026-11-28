@@ -85,9 +85,22 @@ def test_seed_matches_by_number(plan):
 
 
 def test_broken_title_is_uncertain():
-    assert title_matches("ThÃ´ng tÆ° �", ["thuế thu nhập doanh nghiệp"]) is None
+    assert title_matches("Ã", ["thuế thu nhập doanh nghiệp"]) is None
     assert title_matches("", ["thuế"]) is None
+    assert title_matches("�\x90", ["thuế"]) is None
     assert title_matches("bất kỳ", []) is True
+
+
+def test_unrecoverable_char_matches_any_one_character():
+    # vbpl search payload: "Đ" arrives as U+FFFD + 0x90
+    other = "Thông tư liên tịch số 37/2015/TTLT-BL�\x90TBXH-BNV Hướng dẫn chức năng, nhiệm vụ"
+    assert title_matches(other, ["thuế thu nhập doanh nghiệp"]) is False
+    tax = "Thông tư 78/2014/TT-BTC hướng dẫn thi hành Luật thuế thu nhập doanh nghiệp, BTC-T�\x90"
+    assert title_matches(tax, ["thuế thu nhập doanh nghiệp"]) is True
+    # The broken char inside the term itself still matches
+    assert title_matches("Nghị �\x90ịnh về thuế", ["nghị định"]) is True
+    # Mixed mojibake is repaired first, then the leftover broken char is a wildcard
+    assert title_matches("ThÃ´ng tÆ° �", ["thuế thu nhập doanh nghiệp"]) is False
 
 
 @pytest.mark.parametrize("so_hieu, expected", [
@@ -124,3 +137,21 @@ def test_load_all_runs_records(tmp_path, monkeypatch):
         (tmp_path / run / "metadata.json").write_text(json.dumps([rec]), encoding="utf-8")
     (tmp_path / "2026-10-12" / "run-110000").mkdir()  # lượt hỏng, chưa có metadata
     assert set(storage.load_all_runs_records()) == {"id::1", "mof::id::9"}
+
+
+def test_term_matches_whole_words_only():
+    assert title_matches("Về việc chuyển giáo viên dân lập vào biên chế", ["chuyển giá"]) is False
+    assert title_matches("Quản lý thuế đối với giao dịch chuyển giá.", ["chuyển giá"]) is True
+
+
+def test_topic_requires_cit_mention_in_text(tmp_path):
+    path = tmp_path / "kw.toml"
+    path.write_text(
+        'doc_types = ["Thông tư"]\n[topic]\nterms = ["ưu đãi thuế"]\n'
+        'require_any = ["thu nhập doanh nghiệp", "TNDN"]\n',
+        encoding="utf-8",
+    )
+    s = load_keyword_plan(path).searches[0]
+    assert s.on_topic("Ưu đãi thuế nhập khẩu ASEAN", "Điều 1. Thuế suất nhập khẩu...") is False
+    assert s.on_topic("Ưu đãi thuế", "Điều 1. Miễn thuế TNDN cho dự án...") is True
+    assert s.on_topic("Ưu đãi thuế", None) is True  # no text: cannot decide, keep

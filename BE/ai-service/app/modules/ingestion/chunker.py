@@ -20,6 +20,21 @@ _LEADING_POINT_RE = re.compile(r"^\s*([a-zđ]\d*)\)\s+(.+)$", re.IGNORECASE | re
 _SUBPOINT_SPLIT_RE = re.compile(r"(?:^|\n|;\s*)\s*([a-zđ]\d+)\)\s+", re.IGNORECASE)
 _PATH_CLAUSE_RE = re.compile(r"\bkhoản\s+(\d{1,2})\b", re.IGNORECASE)
 _PATH_POINT_RE = re.compile(r"\bđiểm\s+([a-zđ]\d*)\b", re.IGNORECASE)
+# Amending article titled after its target: "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP ngày ..."
+_AMEND_TARGET_RE = re.compile(
+    r"^((?:sửa đổi, bổ sung|sửa đổi|bổ sung|bãi bỏ|thay thế)\s+(?:điểm|khoản|điều|mục)\s+\S.*?)"
+    r"(?:\s+ngày\s+\d|\s+như sau|[:\n]|$)",
+    re.IGNORECASE,
+)
+
+
+def _amended_target(article_title: str) -> str | None:
+    """Return what an amending article changes, e.g. "bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP"."""
+    m = _AMEND_TARGET_RE.match(article_title.strip())
+    if not m:
+        return None
+    target = m.group(1).strip()
+    return target[0].lower() + target[1:]
 
 
 def _split_body(body: str, limit: int) -> list[str]:
@@ -344,6 +359,9 @@ class LegalChunker:
                         if art_label and art_name and not art_label.endswith(art_name)
                         else (art_label or art_name)
                     )
+                    # The quoted body has no clause of its own, so the citation names the amended clause instead.
+                    if art_label and (target := _amended_target(art_name)):
+                        art_label = f"{art_label} ({target})"
                     units = art.get("units") or []
                     grouped = _group_units_by_clause(units) if units else [(None, None, [])]
 

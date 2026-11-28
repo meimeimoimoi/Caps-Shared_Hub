@@ -40,6 +40,9 @@ terms = [
     "trích lập dự phòng",
     "doanh thu tính thuế",
 ]
+# Generic terms ("ưu đãi thuế", "trích lập dự phòng"...) also hit import-duty, bank and
+# public-sector documents -> keep only those whose title or full text mentions corporate income tax
+require_any = ["thu nhập doanh nghiệp", "TNDN"]
 
 # 3. Biểu mẫu (03/TNDN, 01A/TNDN, 01B/TNDN...) không nằm trong tên văn bản ->
 # liệt kê SỐ HIỆU văn bản gốc ban hành mẫu tờ khai / văn bản then chốt cần lấy chắc chắn.
@@ -49,6 +52,11 @@ terms = [
 # nên seed nghị quyết sẽ tìm sai loại), Quyết định đính chính 2551/QĐ-BTC (vbpl xếp vào văn bản hành chính).
 [seeds]
 so_hieu = [
+    # Enterprise depreciation regime (deductible cost) never names CIT, so require_any would drop it
+    "45/2013/TT-BTC",
+    "147/2016/TT-BTC",
+    "28/2017/TT-BTC",
+    "30/2025/TT-BTC",
     # Thuế TNDN: luật, luật sửa đổi, bản hợp nhất, nghị định và thông tư hướng dẫn
     "67/2025/QH15",
     "09/2026/QH16",

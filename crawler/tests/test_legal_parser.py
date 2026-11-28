@@ -105,6 +105,22 @@ def test_quoted_amendments_stay_inside_clause():
     assert not doc.warnings
 
 
+QUOTED_LABELS = """Điều 4. Giảm thuế
+5. Lập hoá đơn:
+"Đơn giá" ghi: 11.000.000 x 60 (m2) = 660.000.000 đồng.
+“Thuế suất” ghi: 10% x 50%.
+6. Kê khai thuế được giảm
+a) Thủ tục khai thuế.
+b) Dòng ghi chú ghi "Giảm 50%".
+"""
+
+
+def test_line_starting_with_closed_quote_does_not_swallow_clauses():
+    units = parse_legal_text(QUOTED_LABELS).articles[0].units
+    assert [u.label for u in units] == ["Khoản 5", "Khoản 6", "Khoản 6 · Điểm a", "Khoản 6 · Điểm b"]
+    assert '"Đơn giá" ghi' in units[0].text
+
+
 SECTIONS = """CHƯƠNG I
 QUY ĐỊNH CHUNG
 Mục 1
@@ -429,3 +445,16 @@ def test_export_records_writes_selected_formats(tmp_path, monkeypatch, formats, 
     assert written == suffixes
     assert ("file" in manifest[0]) == ("json" in formats)
     assert ("md_file" in manifest[0]) == ("md" in formats)
+    assert next(iter(manifest[0].values())).startswith("nghi_dinh/2025/")
+
+
+def test_export_records_without_date_goes_to_unknown_year(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    manifest = export_records([{**_nd82_rec(), "ngay_ban_hanh": None}])
+    assert manifest[0]["file"].startswith("nghi_dinh/khong-ro-nam/")
+
+
+def test_normalize_record_drops_khong_so_from_title():
+    from src.normalize import normalize_record
+    rec = normalize_record({"so_hieu": "Không số", "tieu_de": "Luật Thuế thu nhập doanh nghiệp số Không số"})
+    assert rec["tieu_de"] == "Luật Thuế thu nhập doanh nghiệp"
