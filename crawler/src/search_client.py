@@ -498,13 +498,18 @@ def _download_files_from_detail(
     n_btn = min(buttons.count(), len(files))
     logger.info(f"  [TAI] Tab 'Tai ve' co {n_btn} file.")
 
+    timeouts_in_row = 0
     for i in range(n_btn):
+        if timeouts_in_row >= config.MAX_CONSECUTIVE_DOWNLOAD_TIMEOUTS:
+            logger.warning(f"    [TAI] Dung: {timeouts_in_row} nut lien tiep khong tai, bo {n_btn - i} file con lai.")
+            break
         meta = files[i]
         name = meta.get("name") or f"file_{i + 1}"
         try:
-            with page.expect_download(timeout=30_000) as dl_info:
+            with page.expect_download(timeout=config.DOWNLOAD_START_TIMEOUT_MS) as dl_info:
                 buttons.nth(i).evaluate("e => e.click()")
             dl = dl_info.value
+            timeouts_in_row = 0
 
             dest = _build_dest_path(doc_type, so_hieu, dl.suggested_filename or name)
             dl.save_as(str(dest))
@@ -527,7 +532,10 @@ def _download_files_from_detail(
             logger.info(f"    [LUU OK] {name} -> {dest} ({size:,} bytes)")
 
         except PlaywrightTimeoutError:
-            logger.warning(f"    [TIMEOUT] '{name}': khong co su kien download trong 30s.")
+            timeouts_in_row += 1
+            logger.warning(
+                f"    [TIMEOUT] '{name}': khong co su kien download trong {config.DOWNLOAD_START_TIMEOUT_MS // 1000}s."
+            )
         except Exception as e:
             logger.warning(f"    [TAI FAIL] '{name}': {e}")
         _polite_delay(0.4, 1.0)
@@ -607,6 +615,12 @@ def _visit_detail_page(
     item.visited_url = page.url
     logger.info(f"  [VAO TRANG OK] page.url = {item.visited_url}")
 
+    if _is_empty_detail_page(page):
+        # Reloading right away serves the same empty page, so do not wait for text or files
+        logger.warning("  [TRANG TRONG] vbpl tra trang khong co tab nao: bo qua toan van va file.")
+        item.download_error = "trang chi tiet trong"
+        return _attach_luoc_do(page, item)
+
     # --- Metadata + toàn văn từ server action của trang chi tiết ---
     listener.wait_for_detail(config.DETAIL_CONTENT_TIMEOUT_MS, min_count=n_before)
     # The page sends several detail payloads (metadata, provision tree, history...): scan all
@@ -648,7 +662,22 @@ def _visit_detail_page(
     elif not skip_download:
         item.download_error = item.download_error or "khong co file dinh kem"
 
-    # Last: leaves the page, so everything above must be read first
+    return _attach_luoc_do(page, item)
+
+
+def _is_empty_detail_page(page: Page) -> bool:
+    """vbpl sometimes serves a detail page with only the footer: no tabs, no payload, no text."""
+    try:
+        page.locator(config.DETAIL_SELECTORS["tab"]).first.wait_for(
+            state="attached", timeout=config.DETAIL_TABS_TIMEOUT_MS
+        )
+        return False
+    except PlaywrightTimeoutError:
+        return True
+
+
+def _attach_luoc_do(page: Page, item: SearchResultItem) -> SearchResultItem:
+    """Last step: leaves the page, so everything else must be read first."""
     luoc_do = _read_luoc_do(page, item.doc_id)
     item.relations = luoc_do["relations"] or []
     item.vbhn = luoc_do["vbhn"]
@@ -725,7 +754,8 @@ def _read_luoc_do(page: Page, doc_id: str) -> dict:
             if error:
                 logger.warning(f"  [LUOC DO] {error}")
                 continue
-            deadline = time.monotonic() + config.DETAIL_CONTENT_TIMEOUT_MS / 1000
+            wait_ms = config.DETAIL_CONTENT_TIMEOUT_MS if attempt else config.LUOC_DO_FIRST_TRY_TIMEOUT_MS
+            deadline = time.monotonic() + wait_ms / 1000
             # A VBHN page has no relations action: stop once its metadata says so
             is_vbhn = lambda: any(d.get("isConsolidatedDocument") for d in details)  # noqa: E731
             while not found and not is_vbhn() and time.monotonic() < deadline:

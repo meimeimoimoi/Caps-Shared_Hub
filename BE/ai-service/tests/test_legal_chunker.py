@@ -44,5 +44,40 @@ class LegalChunkerAppendixTests(unittest.TestCase):
         self.assertEqual(len(chunks), 1)
 
 
+class LegalChunkerAmendmentTests(unittest.TestCase):
+    def _articles(self, articles):
+        chunks = LegalChunker.chunk_document(_doc({"chapters": [{"number": None, "articles": articles}]}))
+        return [(c["article"], c["clause"]) for c in chunks]
+
+    def test_amending_article_cites_the_amended_clause(self):
+        quoted = [{"clause": None, "text": "“15. Thu nhập của doanh nghiệp...”"}]
+        result = self._articles(
+            [
+                {
+                    "number": "2",
+                    "title": "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP ngày 15 tháng 12 năm 2025 của Chính phủ",
+                    "units": quoted,
+                },
+                {"number": "3", "title": "Bổ sung khoản 14a vào sau khoản 14 Điều 4 của Luật Thuế TNDN", "units": quoted},
+            ]
+        )
+        self.assertEqual(
+            result,
+            [
+                ("Điều 2 (bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP)", None),
+                ("Điều 3 (bổ sung khoản 14a vào sau khoản 14 Điều 4 của Luật Thuế TNDN)", None),
+            ],
+        )
+
+    def test_other_articles_keep_plain_label(self):
+        result = self._articles(
+            [
+                {"number": "1", "title": "Sửa đổi, bổ sung một số điều của Nghị định số 68/2026/NĐ-CP", "units": []},
+                {"number": "3", "title": "Hiệu lực thi hành", "units": [{"text": "Có hiệu lực từ 01/01/2026."}]},
+            ]
+        )
+        self.assertEqual([a for a, _ in result], ["Điều 1", "Điều 3"])
+
+
 if __name__ == "__main__":
     unittest.main()

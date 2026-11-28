@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Set
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from slugify import slugify
 
 import config
@@ -58,6 +60,10 @@ def summary_matches(summary: Optional[str], keyword: Optional[str]) -> bool:
 
 def _session() -> requests.Session:
     s = requests.Session()
+    # The server times out now and then; one timeout used to kill a crawl of several hours.
+    # allowed_methods=None also retries the search POST (read-only on this API).
+    retry = Retry(total=5, backoff_factor=5, status_forcelist=(500, 502, 503, 504), allowed_methods=None)
+    s.mount("https://", HTTPAdapter(max_retries=retry))
     s.headers.update(config.REQUEST_HEADERS)
     s.headers.update({"Origin": config.MOF_BASE_URL, "Referer": config.MOF_BASE_URL + "/"})
     # Lấy cookie load balancer trước khi gọi API (thiếu cookie đôi khi bị 500)
