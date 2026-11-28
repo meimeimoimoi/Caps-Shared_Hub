@@ -209,11 +209,11 @@ def test_payload_matches_ingestion_schema():
     assert len(kd["file_hash"]) == 64
     chunks = payload["chunks"]
     assert [c["chunk_index"] for c in chunks] == list(range(len(chunks)))
-    c41 = next(c for c in chunks if c["path"] == "Điều 4 · Khoản 1")
-    assert c41["article"] == "4" and c41["clause"] == "1"
+    c41 = next(c for c in chunks if c["path"] == "Điều 4 · Khoản 1 · Điểm a")
+    assert c41["article"] == "4" and c41["clause"] == "1" and c41["point"] == "a"
     assert c41["text"].startswith("Nghị định 82/2025/NĐ-CP — Điều 4. Gia hạn")
     header, body = c41["text"].split("\n", 1)
-    assert header.endswith("— Khoản 1")
+    assert header.endswith("— Khoản 1 — Điểm a")
     assert body.startswith("1. Đối với thuế giá trị gia tăng")
     assert "\na) Gia hạn thời hạn nộp thuế" in body
     assert c41["effective_from"] == "2025-04-02"
@@ -250,16 +250,17 @@ def test_docx_appendix_attachment_is_exported(tmp_path):
         "so_hieu": "89/2026/TT-BTC", "loai_van_ban": "Thông tư", "doc_id": "tt89",
         "noi_dung_text": "Điều 1. Phạm vi\n1. Nội dung.",
         "attachments": [
-            {"file_name": "89-2026-tt-btc__Phụ lục I.docx", "local_path": appendix},
-            {"file_name": "THÔNG TƯ 89 LƯU HÀNH.docx", "local_path": appendix},
-            {"file_name": "Phụ lục II. Khai bổ sung.docx", "local_path": str(broken)},
-            {"file_name": "Phụ lục I. Khai thuế mẫu 1-6.rar", "local_path": str(broken.with_suffix(".rar"))},
+            {"downloaded": True, "file_type": "docx", "file_name": "89-2026-tt-btc__Phụ lục I.docx", "local_path": appendix},
+            {"downloaded": True, "file_type": "docx", "file_name": "THÔNG TƯ 89 LƯU HÀNH.docx", "local_path": appendix},
+            {"downloaded": True, "file_type": "docx", "file_name": "Phụ lục II. Khai bổ sung.docx", "local_path": str(broken)},
+            {"downloaded": True, "file_type": "rar", "file_name": "Phụ lục I. Khai thuế mẫu 1-6.rar", "local_path": str(broken.with_suffix(".rar"))},
         ],
     }
     appendices = build_payload(rec)["knowledge_document"]["content_json"]["appendices"]
     assert appendices == [{
         "title": "Phụ lục I",
         "text": "Phụ lục I\nDANH MỤC HỒ SƠ KHAI THUẾ\n2 | 03-2/TNDN | Phụ lục chuyển lỗ\n9 | 03-8/TNDN | Phụ lục bảng phân bổ",
+        "file": "89-2026-tt-btc__Phụ lục I.docx",
     }]
 
 
@@ -299,6 +300,16 @@ def test_long_clause_is_split_with_header_repeated():
         assert len(c["text"]) <= MAX_CHUNK_CHARS
         assert c["text"].startswith(header + "\n")
         assert c["path"] == "Điều 1 · Khoản 1"
+
+
+def test_each_point_is_a_chunk_with_clause_lead_in():
+    text = "Điều 9. Chi phí\n1. Chi phí được trừ.\n2. Các khoản chi không được trừ gồm:\na) Không có hóa đơn.\nb) Vượt mức.\n"
+    rec = {"so_hieu": "1/2025/NĐ-CP", "loai_van_ban": "Nghị định", "doc_id": "points",
+           "tieu_de": "Nghị định", "noi_dung_text": text}
+    chunks = build_payload(rec)["chunks"]
+    assert [c["path"] for c in chunks] == ["Điều 9 · Khoản 1", "Điều 9 · Khoản 2 · Điểm a", "Điều 9 · Khoản 2 · Điểm b"]
+    assert all("2. Các khoản chi không được trừ gồm:" in c["text"] for c in chunks[1:])
+    assert "Khoản 2 — Điểm b\n" in chunks[2]["text"] and "hóa đơn" not in chunks[2]["text"]
 
 
 def test_document_without_text_still_has_hash_and_is_pending():
@@ -396,3 +407,16 @@ def test_export_records_writes_selected_formats(tmp_path, monkeypatch, formats, 
     assert written == suffixes
     assert ("file" in manifest[0]) == ("json" in formats)
     assert ("md_file" in manifest[0]) == ("md" in formats)
+    assert next(iter(manifest[0].values())).startswith("nghi_dinh/2025/")
+
+
+def test_export_records_without_date_goes_to_unknown_year(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    manifest = export_records([{**_nd82_rec(), "ngay_ban_hanh": None}])
+    assert manifest[0]["file"].startswith("nghi_dinh/khong-ro-nam/")
+
+
+def test_normalize_record_drops_khong_so_from_title():
+    from src.normalize import normalize_record
+    rec = normalize_record({"so_hieu": "Không số", "tieu_de": "Luật Thuế thu nhập doanh nghiệp số Không số"})
+    assert rec["tieu_de"] == "Luật Thuế thu nhập doanh nghiệp"

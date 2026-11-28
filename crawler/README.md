@@ -67,14 +67,14 @@ data/
         │   └── quyet_dinh/*.txt
         └── export/            # Payload cho Caps-Shared_Hub (xem bên dưới)
             ├── manifest.json
-            └── <loai>/<so-hieu>.json
+            └── <loai>/<năm>/<so-hieu>.json
 ```
 
 ## Xuất dữ liệu cho Caps-Shared_Hub (tách Điều/Khoản)
 
 Cào và chunking là **2 bước riêng**. Lệnh cào mặc định chỉ lưu text + `metadata.json`;
 bước 2 tách toàn văn thành Chương → Điều → Khoản → Điểm (`src/legal_parser.py`) và ghi
-`data/<ngày>/<lượt>/export/<loai>/<so-hieu>.json` (`src/exporter.py`; nguồn khác vbpl nằm trong thư mục `<nguon>/`).
+`data/<ngày>/<lượt>/export/<loai>/<năm>/<so-hieu>.json` (`src/exporter.py`; `<năm>` là năm ban hành, không rõ ngày thì `khong-ro-nam`; nguồn khác vbpl nằm trong thư mục `<nguon>/`).
 
 ```bash
 python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào
@@ -94,7 +94,7 @@ Mỗi file khớp schema `knowledge` của backend (`BE/ingestion/Entities`):
 - `legal_source`: `document_number`, `doc_type`, `issuing_authority`, `title`
 - `knowledge_document`: `source = "CRAWL_VBPL"` / `"CRAWL_MOF"`, `file_hash` (sha256 toàn văn),
   ngày ISO `YYYY-MM-DD`, `content_json` (cây Chương/Điều/units giống trang duyệt knowledge-admin)
-- `chunks[]`: mỗi Khoản 1 chunk (Khoản dài > 1500 ký tự thì tách theo Điểm), có
+- `chunks[]`: mỗi Khoản 1 chunk, Khoản có Điểm thì mỗi Điểm 1 chunk (kèm câu dẫn của Khoản), có
   `article` / `clause` / `point`, `path` ("Điều 4 · Khoản 1") và `text` mở đầu bằng breadcrumb
 
 Những chỗ đánh số bất thường được ghi `warnings` / unit `status: "WARNING"` để duyệt tay.
@@ -142,6 +142,15 @@ Cài OCR (một lần):
 
 Chưa cài Tesseract thì tool vẫn chạy: văn bản được đánh dấu `ocr_required: true`.
 Dùng `--no-ocr` để bỏ qua OCR cho nhanh.
+
+## Phụ lục đính kèm (biểu mẫu 03/TNDN...)
+
+Biểu mẫu tờ khai không nằm trong toàn văn trên trang mà ở file đính kèm riêng (`.docx`, `.zip`, `.rar`).
+Khi export, `src/appendix.py` đọc các file này (file nén, hoặc `.docx` có chữ "Phụ lục" trong tên): mỗi biểu mẫu
+`.docx` thành các chunk riêng, `path` = tên phụ lục / tên mẫu, `article` = null. Text phụ lục được tính vào
+`file_hash`, nên chạy lại `--export-only` sẽ tạo bản mới thay vì bị ingestion bỏ qua do trùng hash.
+File `.rar` cần `bsdtar` (image Docker đã có; Debian/Ubuntu: `apt install libarchive-tools`). Mẫu `.doc` (Word 97-2003)
+hiện bị bỏ qua và chỉ ghi cảnh báo trong log.
 
 ## ⚠️ Nếu scraper không chạy đúng (0 kết quả / lỗi selector)
 
