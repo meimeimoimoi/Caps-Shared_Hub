@@ -47,7 +47,8 @@ class CalculationHintTests(unittest.TestCase):
         hint = compute_chat_cit_hint(question, [_hit(RATES), _hit(REDUCTION)])
         self.assertIsNotNone(hint)
         self.assertFalse(hint.formula_only)
-        # 300 million x 15% = 45 million, reduced by 30% under the cited rule = 31.5 million.
+        # 300 million x 15% = 45 million; the 30% reduction (31.5 million) is accepted as a conditional figure.
+        self.assertIn("45", hint.expected_tax_numbers)
         self.assertIn("31.5", hint.expected_tax_numbers)
 
     def test_reduction_not_applied_above_threshold(self):
@@ -82,7 +83,10 @@ class BracketRateTests(unittest.TestCase):
         self.assertIsNone(mismatched_bracket_rate(self.QUESTION, "Áp dụng thuế suất 20% [1].", [_hit(RATES)]))
 
     def test_question_without_revenue_is_ignored(self):
-        self.assertIsNone(mismatched_bracket_rate("Thuế suất phổ thông?", "Thuế suất 17% [1].", [_hit(RATES)]))
+        self.assertIsNone(mismatched_bracket_rate("Thuế suất là bao nhiêu?", "Thuế suất 17% [1].", [_hit(RATES)]))
+
+    def test_general_rate_question_expects_twenty_percent(self):
+        self.assertIsNotNone(mismatched_bracket_rate("Thuế suất phổ thông?", "Thuế suất 17% [1].", [_hit(RATES)]))
 
 
 if __name__ == "__main__":

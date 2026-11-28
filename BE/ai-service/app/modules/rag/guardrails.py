@@ -120,26 +120,89 @@ _REVENUE_RANGE_RE = re.compile(
 )
 
 
-def mismatched_bracket_rate(question: str, conclusion: str, used_chunks: list) -> str | None:
-    """Return a retry note when the conclusion states a CIT rate that contradicts the revenue bracket in the question."""
-    if _REVENUE_RANGE_RE.search(question or ""):
+_REVENUE_LABEL = r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?"
+# "Thuế suất phổ thông" asks for the general rate, not an SME bracket (TS-01).
+_GENERAL_RATE_MARKERS = ("phổ thông", "thuế suất chung", "thông thường", "thuế suất cơ bản")
+_YES_NO_QUESTION_RE = re.compile(r"\b(?:đúng\s+không|có\s+đúng|phải\s+không|đúng\s+hay\s+sai)\b", re.IGNORECASE)
+_AFFIRMS_RE = re.compile(r"^\W*(?:đúng|chính\s+xác|phải)\b", re.IGNORECASE)
+_REDUCTION_LIMIT_RE = re.compile(r"doanh\s+thu[^.;]{0,60}?không\s+quá\s+(\d+(?:[.,]\d+)?)\s*tỷ", re.IGNORECASE)
+_GRANTS_REDUCTION_RE = re.compile(r"\bđược\s+giảm\s+30\s*%", re.IGNORECASE)
+_DENIES_REDUCTION_RE = re.compile(r"\b(?:không|chưa)\s+(?:được\s+|đủ\s+điều\s+kiện\s+)?(?:giảm|hưởng)", re.IGNORECASE)
+
+
+def _chunks_text(*chunk_lists: list | None) -> str:
+    return " ".join(
+        str((hit.payload or {}).get("text_content") or "") for chunks in chunk_lists for hit in (chunks or [])
+    )
+
+
+def _expected_rate(question: str, law_text: str) -> float | None:
+    """The CIT rate the law gives for the question: by its revenue figure, or the general rate when asked for."""
+    q_low = (question or "").lower()
+    if _REVENUE_RANGE_RE.search(q_low):
         # "từ trên 3 tỷ đến không quá 50 tỷ" names a whole bracket, not one revenue figure (TS-03).
         return None
-    revenue = _extract_labeled_vnd((question or "").lower(), r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?")
-    if revenue is None:
-        return None
-    law_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks)
-    expected = resolve_statutory_cit_rate(revenue_vnd=revenue, law_text=law_text, explicit_rate=None)
+    revenue = _extract_labeled_vnd(q_low, _REVENUE_LABEL)
+    if revenue is not None:
+        return resolve_statutory_cit_rate(revenue_vnd=revenue, law_text=law_text, explicit_rate=None)
+    if any(marker in q_low for marker in _GENERAL_RATE_MARKERS) and "20%" in law_text.lower():
+        return 20.0
+    return None
+
+
+def mismatched_bracket_rate(
+    question: str, conclusion: str, used_chunks: list, retrieved_chunks: list | None = None
+) -> str | None:
+    """Return a retry note when the conclusion states a CIT rate that contradicts the revenue bracket in the question.
+
+    The bracket is read from every retrieved chunk, because the model often cites only the 15%/17% clauses (task 19).
+    """
+    expected = _expected_rate(question, _chunks_text(used_chunks, retrieved_chunks))
     if expected is None:
         return None
-    stated = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(CITATION_MARKER_RE.sub(" ", conclusion or ""))}
+    body = CITATION_MARKER_RE.sub(" ", conclusion or "")
+    stated = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(body)}
     bracket_rates = stated & {15.0, 17.0, 20.0}
+
+    if _YES_NO_QUESTION_RE.search(question or "") and _AFFIRMS_RE.search(body):
+        asked = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(question or "")} & {15.0, 17.0, 20.0}
+        if asked and expected not in asked:
+            # TS-11: "doanh thu 5 tỷ được áp thuế suất 15% đúng không?" answered "Đúng ... 17%".
+            return (
+                f"Tiền đề trong câu hỏi sai: theo đoạn căn cứ, mức thuế suất áp dụng là {expected:g}%, không phải "
+                + ", ".join(f"{r:g}%" for r in sorted(asked))
+                + ". Hãy trả lời 'Sai' và nêu mức đúng kèm căn cứ."
+            )
+
     if not bracket_rates or expected in bracket_rates:
         return None
     return (
         f"Kết luận trước nêu sai mức thuế suất theo doanh thu trong câu hỏi: theo đoạn căn cứ, mức áp dụng là {expected:g}%. "
         "Hãy đối chiếu đúng khung doanh thu trong đoạn căn cứ."
     )
+
+
+def mismatched_reduction_eligibility(question: str, conclusion: str, retrieved_chunks: list) -> str | None:
+    """Return a retry note when the 30% reduction is granted or denied against the revenue limit in the law (MG-07)."""
+    law_text = _chunks_text(retrieved_chunks)
+    if "giảm 30%" not in law_text.lower():
+        return None
+    limit_match = _REDUCTION_LIMIT_RE.search(law_text)
+    revenue = _extract_labeled_vnd((question or "").lower(), _REVENUE_LABEL)
+    if limit_match is None or revenue is None or _REVENUE_RANGE_RE.search((question or "").lower()):
+        return None
+    limit = parse_numeric_scalar(limit_match.group(1).replace(",", "."))
+    if limit is None:
+        return None
+    limit_vnd = limit * UNIT_SCALE_VND["tỷ"]
+    body = CITATION_MARKER_RE.sub(" ", conclusion or "")
+    grants = bool(_GRANTS_REDUCTION_RE.search(body)) and not _DENIES_REDUCTION_RE.search(body)
+    if revenue > limit_vnd and grants:
+        return (
+            f"Kết luận trước cho giảm 30% nhưng doanh thu trong câu hỏi vượt mức không quá {limit:g} tỷ đồng "
+            "trong đoạn căn cứ. Hãy kết luận doanh nghiệp không được giảm 30% và nêu căn cứ."
+        )
+    return None
 
 
 def find_ungrounded_numbers(

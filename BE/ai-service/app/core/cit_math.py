@@ -15,6 +15,12 @@ UNIT_SCALE_VND: dict[str, float] = {
     "ngàn": 1_000.0,
     "đồng": 1.0,
     "vnd": 1.0,
+    # Unaccented spellings typed without Vietnamese input ("doanh thu 2 ty", TS-05).
+    "ty": 1_000_000_000.0,
+    "trieu": 1_000_000.0,
+    "nghin": 1_000.0,
+    "ngan": 1_000.0,
+    "dong": 1.0,
 }
 
 

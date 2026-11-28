@@ -11,7 +11,7 @@ from app.core.cit_math import (
 )
 
 CALCULATION_QUESTION_RE = re.compile(
-    r"\b\d+(?:[.,]\d+)?\s*(?:tỷ|triệu|nghìn|ngàn|đồng|vnd)\b", re.IGNORECASE
+    r"\b\d+(?:[.,]\d+)?\s*(?:tỷ|triệu|nghìn|ngàn|đồng|vnd|ty|trieu|nghin|ngan)\b", re.IGNORECASE
 )
 CALC_INTENT_KEYWORDS = (
     "tính thuế", "thuế phải nộp", "thuế tndn phải nộp", "số thuế phải nộp",
@@ -47,7 +47,7 @@ def _extract_labeled_vnd(text: str, label_regex: str) -> float | None:
     # Drop period years ("năm 2026") so they do not block the label-to-amount match.
     text = _PERIOD_YEAR_RE.sub(r"\1", text)
     pattern = re.compile(
-        rf"(?:{label_regex})[^0-9;\n]{{0,35}}?(\d{{1,3}}(?:[.,]\d{{3}})+|\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn|đồng|vnd)\b",
+        rf"(?:{label_regex})[^0-9;\n]{{0,35}}?(\d{{1,3}}(?:[.,]\d{{3}})+|\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn|đồng|vnd|ty|trieu|nghin|ngan|dong)\b",
         re.IGNORECASE,
     )
     match = pattern.search(text)
@@ -106,6 +106,46 @@ def detect_missing_case_clarification(question: str, retrieved_chunks: list) -> 
         return (
             "Mức thuế suất / ưu đãi giảm thuế TNDN áp dụng phụ thuộc vào quy mô tổng doanh thu của doanh nghiệp. "
             "Vui lòng cho biết tổng doanh thu của công ty bạn là bao nhiêu?"
+        )
+    return _missing_own_case_facts(q_norm)
+
+
+_OWN_CASE_RE = re.compile(
+    r"\b(?:công\s+ty|doanh\s+nghiệp)\s+(?:tôi|em|mình)\b|\b(?:giúp|cho)\s+(?:tôi|em|mình)\b"
+    r"|\b(?:khoản\s+chi|chi\s+phí)\s+(?:này|đó|trên)\b",
+    re.IGNORECASE,
+)
+_YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+
+
+def _missing_own_case_facts(q_norm: str) -> str | None:
+    """Ask for the facts when a question about the user's own case gives no figure or description (task 21).
+
+    CP-18 "Khoản chi này của công ty tôi có được trừ không?", LO-07 "Công ty tôi lỗ năm trước thì năm nay được trừ
+    bao nhiêu?", MG-12 "Công ty tôi có được giảm thuế TNDN năm 2026 không?", TT-08 "Tính giúp tôi số thuế TNDN phải
+    nộp năm 2026."
+    """
+    if not _OWN_CASE_RE.search(q_norm) or re.search(r"\d", _YEAR_RE.sub(" ", q_norm)):
+        return None
+    if re.search(r"\b(?:khoản\s+chi|chi\s+phí)\s+(?:này|đó|trên)\b", q_norm) and "trừ" in q_norm:
+        return (
+            "Để xác định khoản chi có được trừ hay không, vui lòng cho biết nội dung khoản chi, số tiền, "
+            "chứng từ (hóa đơn) và cách thanh toán (tiền mặt hay chuyển khoản)."
+        )
+    if re.search(r"\blỗ\b", q_norm):
+        return (
+            "Để xác định số lỗ được chuyển, vui lòng cho biết số lỗ, năm phát sinh lỗ và thu nhập tính thuế của năm nay."
+        )
+    # Short questions only: a longer one usually names the project or sector the incentive depends on.
+    if len(q_norm) <= 90 and re.search(r"\b(?:được\s+giảm|giảm\s+thuế|ưu\s+đãi|miễn\s+thuế)\b", q_norm):
+        return (
+            "Việc giảm hoặc ưu đãi thuế TNDN phụ thuộc vào doanh thu, ngành nghề và loại ưu đãi. "
+            "Vui lòng cho biết tổng doanh thu năm, ngành nghề kinh doanh và loại ưu đãi bạn muốn hỏi."
+        )
+    if any(kw in q_norm for kw in CALC_INTENT_KEYWORDS) or "tính giúp" in q_norm:
+        return (
+            "Để tính số thuế TNDN phải nộp, vui lòng cho biết tổng doanh thu năm và thu nhập tính thuế "
+            "(hoặc doanh thu và chi phí được trừ, số lỗ được chuyển nếu có)."
         )
     return None
 
@@ -176,10 +216,17 @@ def compute_chat_cit_hint(question: str, retrieved_chunks: list) -> CitCalcHint 
 
     base_tax = net_taxable * (rate / 100.0)
     asks_reduction_30 = any(k in q_norm for k in ("giảm 30%", "nghị quyết 43", "nghị định 398")) and "30%" in law_text
-    # The cited reduction applies by law when revenue is within its threshold, even if the user does not ask for it.
-    if not asks_reduction_30 and revenue is not None and revenue <= 10_000_000_000:
-        asks_reduction_30 = "giảm 30%" in law_text and "10 tỷ" in law_text
+    # When the user does not ask about it, the reduction is only mentioned as conditional: the payable figure
+    # stays the pre-reduction amount (TT-02 expects 45 triệu, "chưa tính giảm 30% nếu đủ điều kiện").
+    mention_reduction = (
+        not asks_reduction_30
+        and revenue is not None
+        and revenue <= 10_000_000_000
+        and "giảm 30%" in law_text
+        and "10 tỷ" in law_text
+    )
     final_tax = base_tax * 0.70 if asks_reduction_30 else base_tax
+    reduced_tax = base_tax * 0.70
 
     authorized = (
         money_representations(net_taxable)
@@ -187,8 +234,8 @@ def compute_chat_cit_hint(question: str, retrieved_chunks: list) -> CitCalcHint 
         | money_representations(final_tax)
         | {normalize_number_token(str(rate))}
     )
-    if asks_reduction_30:
-        authorized |= money_representations(base_tax * 0.30) | {"30", "70"}
+    if asks_reduction_30 or mention_reduction:
+        authorized |= money_representations(base_tax * 0.30) | money_representations(reduced_tax) | {"30", "70"}
 
     rate_str = str(int(rate)) if float(rate).is_integer() else str(rate).replace(".", ",")
     final_label = format_vnd_human(final_tax)
@@ -198,6 +245,11 @@ def compute_chat_cit_hint(question: str, retrieved_chunks: list) -> CitCalcHint 
         steps.append(f"- Số thuế TNDN phải nộp sau khi giảm 30% = {final_label}")
     else:
         steps.append(f"- Số thuế TNDN phải nộp = {final_label}")
+        if mention_reduction:
+            steps.append(
+                f"- Nếu đủ điều kiện giảm 30% theo đoạn căn cứ thì số thuế còn phải nộp = {format_vnd_human(reduced_tax)} "
+                "(chỉ nêu như trường hợp có điều kiện)"
+            )
 
     return CitCalcHint(
         prompt_block=(
@@ -205,6 +257,79 @@ def compute_chat_cit_hint(question: str, retrieved_chunks: list) -> CitCalcHint 
             + "\n".join(steps)
         ),
         authorized_numbers=authorized,
-        expected_tax_numbers=money_representations(final_tax),
+        # TT-01 (expert-confirmed 31.5) and TT-02 (45, reduction left conditional) accept either figure.
+        expected_tax_numbers=money_representations(final_tax)
+        | (money_representations(reduced_tax) if mention_reduction else set()),
         expected_tax_label=final_label,
     )
+
+
+_WELFARE_SALARY_RE = re.compile(
+    r"lương\s+bình\s+quân(?:\s+(?:một|1|01))?\s+tháng[^0-9;\n]{0,15}?(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn|đồng)",
+    re.IGNORECASE,
+)
+_WELFARE_SPEND_RE = re.compile(
+    r"(?:chi\s+)?phúc\s+lợi[^0-9;\n]{0,30}?(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn|đồng)", re.IGNORECASE
+)
+_CAR_COST_RE = re.compile(r"nguyên\s+giá[^0-9;\n]{0,10}?(\d+(?:[.,]\d+)?)\s*(tỷ|triệu)", re.IGNORECASE)
+_CAR_YEARS_RE = re.compile(r"khấu\s+hao[^0-9;\n]{0,20}?(\d+)\s*năm", re.IGNORECASE)
+# "phần trích khấu hao tương ứng với nguyên giá vượt trên 1,6 tỷ đồng/xe" (passenger cars up to 9 seats).
+_CAR_CAP_RE = re.compile(r"nguyên\s+giá\s+vượt\s+(?:trên\s+|quá\s+)?(\d+(?:[.,]\d+)?)\s*tỷ", re.IGNORECASE)
+
+
+def _money(raw: str, unit: str) -> float | None:
+    val = parse_numeric_scalar(raw.replace(",", ".") if re.fullmatch(r"\d+,\d+", raw) else raw)
+    return val * UNIT_SCALE_VND[unit.lower()] if val is not None else None
+
+
+def _cap_hint(lines: list[str], numbers: list[float]) -> CitCalcHint:
+    authorized: set[str] = set()
+    for amount in numbers:
+        authorized |= money_representations(amount)
+    return CitCalcHint(
+        prompt_block="KẾT QUẢ TÍNH ĐÃ KIỂM TOÁN BẰNG CODE (BẮT BUỘC DÙNG ĐÚNG KẾT QUẢ NÀY, KHÔNG TỰ TÍNH KHÁC):\n"
+        + "\n".join(lines),
+        authorized_numbers=authorized,
+    )
+
+
+def compute_cap_excess_hint(question: str, retrieved_chunks: list) -> CitCalcHint | None:
+    """Compute the non-deductible part above a statutory cap (welfare TT-05, passenger-car depreciation TT-06).
+
+    The cap must be stated in a retrieved chunk; otherwise no figure is produced.
+    """
+    q_norm = " ".join((question or "").lower().split())
+    law_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in retrieved_chunks).lower()
+
+    salary_m, welfare_m = _WELFARE_SALARY_RE.search(q_norm), _WELFARE_SPEND_RE.search(q_norm)
+    if salary_m and welfare_m and "phúc lợi" in law_text and re.search(r"\b0?1\s+tháng\s+lương", law_text):
+        salary, welfare = _money(*salary_m.groups()), _money(*welfare_m.groups())
+        if salary is not None and welfare is not None:
+            excess = max(welfare - salary, 0.0)
+            return _cap_hint(
+                [
+                    f"- Mức chi phúc lợi tối đa được trừ = 01 tháng lương bình quân = {format_vnd_human(salary)}",
+                    f"- Chi phúc lợi trong năm = {format_vnd_human(welfare)}",
+                    f"- Phần chi phúc lợi vượt mức, không được trừ = {format_vnd_human(excess)}",
+                ],
+                [salary, welfare, excess],
+            )
+
+    cost_m, years_m = _CAR_COST_RE.search(q_norm), _CAR_YEARS_RE.search(q_norm)
+    cap_m = _CAR_CAP_RE.search(law_text) if "ô tô" in law_text else None
+    if "ô tô" in q_norm and cost_m and years_m and cap_m:
+        cost = _money(*cost_m.groups())
+        cap = _money(cap_m.group(1), "tỷ")
+        years = int(years_m.group(1))
+        if cost is not None and cap is not None and years > 0 and cost > cap:
+            excess = cost - cap
+            per_year = excess / years
+            return _cap_hint(
+                [
+                    f"- Nguyên giá được trích khấu hao tối đa theo đoạn căn cứ = {format_vnd_human(cap)}",
+                    f"- Phần nguyên giá vượt mức = {format_vnd_human(cost)} − {format_vnd_human(cap)} = {format_vnd_human(excess)}",
+                    f"- Khấu hao phần vượt mỗi năm, không được trừ = {format_vnd_human(excess)} / {years} năm = {format_vnd_human(per_year)}",
+                ],
+                [cost, cap, excess, per_year],
+            )
+    return None

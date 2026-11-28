@@ -7,6 +7,7 @@ import time
 from app.core.legal_refs import extract_document_numbers
 from app.core.models import llm_model
 from app.modules.rag.cit_calculator import (
+    compute_cap_excess_hint,
     compute_chat_cit_hint,
     detect_missing_case_clarification,
 )
@@ -19,6 +20,7 @@ from app.modules.rag.guardrails import (
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
     mismatched_bracket_rate,
+    mismatched_reduction_eligibility,
     missing_verified_tax_note,
 )
 from app.modules.rag.prompts import build_grounded_answer_prompt
@@ -212,7 +214,9 @@ class GroundedGenerator:
         context = format_context_chunks(retrieved_chunks)
         source_count = len(retrieved_chunks)
         scores = [round(float(getattr(hit, "score", 0) or 0), 3) for hit in retrieved_chunks]
-        calc_hint = compute_chat_cit_hint(question, retrieved_chunks)
+        calc_hint = compute_chat_cit_hint(question, retrieved_chunks) or compute_cap_excess_hint(
+            question, retrieved_chunks
+        )
         retry_note: str | None = None
 
         for attempt in range(2):
@@ -300,9 +304,14 @@ class GroundedGenerator:
                 )
                 continue
 
-            if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks):
+            if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks, retrieved_chunks):
                 logger.info("Chat answer stated a rate outside the revenue bracket (attempt %d)", attempt + 1)
                 retry_note = rate_note
+                continue
+
+            if reduction_note := mismatched_reduction_eligibility(question, conclusion_text, retrieved_chunks):
+                logger.info("Chat answer granted a reduction outside its revenue limit (attempt %d)", attempt + 1)
+                retry_note = reduction_note
                 continue
 
             if condition_note := drops_critical_condition(question, conclusion_text, used_chunks):
